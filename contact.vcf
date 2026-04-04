@@ -1,12 +1,24 @@
+Ваш запрос
 BEGIN:VCARD
+
 VERSION:3.0
+
 FN;CHARSET=UTF-8:Mykhailo Kashkarov
+
 ORG;CHARSET=UTF-8:Science-Art Researcher; SCI Model Creator
-TITLE;CHARSET=UTF-8:Artist & Researcher
+
+TITLE;CHARSET=UTF-8:Artist & Researcher  
+
 EMAIL;TYPE=INTERNET:bakminsterfuler@gmail.com
-URL;TYPE=WORK:https://zenodo.org/records/18895764
-URL;TYPE=GITHUB:https://github.com/astra31415926
-URL;TYPE=BLOG:https://dev.to/astra31415926
-URL;TYPE=YOUTUBE:https://www.youtube.com/@Michael-RGB-ART
+
+URL:https://zenodo.org/records/18895764
+
+URL;TYPE=GitHub:https://github.com/astra31415926
+
+URL;TYPE=Dev.to:https://dev.to/astra31415926
+
+URL;TYPE=YouTube:https://www.youtube.com/@Michael-RGB-ART
+
 NOTE;CHARSET=UTF-8:Creator of SCI Universal Model for Spectral QR Codes
-END:VCARD
+
+END:VCARD 
