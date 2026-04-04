@@ -1,13 +1,11 @@
 BEGIN:VCARD
-
 VERSION:3.0
-
-FN:Mikhail Kashkarov
-
-EMAIL:colqrnament@gmail.com
-
+FN:Mykhailo Kashkarov
+ORG:Science-Art Researcher; SCI Model Creator
+TITLE:Artist & Researcher
+EMAIL;TYPE=INTERNET:твой_email@gmail.com
 URL:https://zenodo.org/records/18895764
-
-NOTE:SCI Technology Author
-
+URL;TYPE=YouTube:https://www.youtube.com/@Michael-RGB-ART
+URL;TYPE=Medium:https://medium.com/@Bakminsterfuler
+NOTE:Creator of the SCI Universal Model for Spectral Channel Integrity.
 END:VCARD
