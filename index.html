@@ -392,85 +392,35 @@
                     if(!isFileScan) triggerCaptureSequence();
                 }
             }
-            return foundAny;
-        }
-
-        function triggerCaptureSequence() {
-            stopCamera();
-            els.freeze.width = 480; els.freeze.height = 480;
-            const fctx = els.freeze.getContext('2d');
-            const vw = els.video.videoWidth, vh = els.video.videoHeight;
-            const s = Math.min(vw, vh);
-            fctx.drawImage(els.video, (vw-s)/2, (vh-s)/2, s, s, 0, 0, 480, 480);
-            els.video.classList.add('hidden'); 
-            els.freeze.classList.remove('hidden');
-            startVisualizationSequence();
-        }
-
-        function startVisualizationSequence() {
-            els.centralContainer.classList.add('scan-active');
-            playSuccessSound();
-            setTimeout(() => {
-                els.flash.classList.add('flash-anim');
-                setTimeout(() => {
-                    els.flash.classList.remove('flash-anim');
-                    els.centralContainer.classList.remove('scan-active');
-                    els.viewfinder.classList.remove('targeting');
-                    updateResultUI();
-                }, 400);
-            }, 2000);
-        }
-
-        function playSuccessSound() {
+          function playSuccessSound() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
                 const o = ctx.createOscillator();
                 const g = ctx.createGain();
-                o.connect(g); g.connect(ctx.destination);
-                o.type = 'sine';
-                o.frequency.setValueAtTime(880, ctx.currentTime);
-                o.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.2);
-                g.gain.setValueAtTime(0.1, ctx.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-                o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.2);
-            } catch(e) {}
-        }
 
-        function updateResultUI() {
-            els.resultIndicators.style.opacity = 1;
-            ['r', 'g', 'b'].forEach(ch => {
-                const el = els['res' + ch.toUpperCase()];
-                const indicator = el.querySelector('.indicator');
-                const text = el.querySelector('span');
-                if(results[ch]) {
-                    text.textContent = results[ch];
-                    indicator.className = 'indicator active-'+ch;
-                    el.style.opacity = 1;
-                    els[ch].value = results[ch];
-                } else {
-                    el.style.opacity = 0.4;
-                    text.textContent = translations[currentLang].res_fail;
-                }
-            });
-            generateQR();
-            document.body.classList.remove('mode-camera');
-        }
+                o.connect(g); 
+                g.connect(ctx.destination);
 
-        async function startCamera() {
-            globalReset();
-            document.body.classList.add('mode-camera');
-            els.viewfinder.classList.remove('hidden');
-            els.resultIndicators.style.opacity = 0.7;
-            try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: {ideal: 1280} } });
-                els.video.srcObject = s; 
-                els.video.play();
-                els.video.classList.remove('hidden');
-                els.main.style.opacity = 0;
-                els.freeze.classList.add('hidden');
-                scanning = true; 
-                requestAnimationFrame(scanFrame);
-            } catch(e) { alert("Camera Error: " + e); }
+                // Используем 'triangle' для более глубокого, "дорогого" звука
+                o.type = 'triangle'; 
+
+                // Начинаем с высокого тона (1000 Гц) и плавно опускаем до баса (150 Гц)
+                o.frequency.setValueAtTime(1000, now);
+                o.frequency.exponentialRampToValueAtTime(150, now + 2.0);
+
+                // Плавное появление и затухание громкости, чтобы не было щелчков
+                g.gain.setValueAtTime(0, now);
+                g.gain.linearRampToValueAtTime(0.15, now + 0.3); // Проявляется за 0.3 сек
+                g.gain.setValueAtTime(0.15, now + 1.7);         // Держится
+                g.gain.linearRampToValueAtTime(0, now + 2.0);   // Гаснет к концу
+
+                o.start(now);
+                o.stop(now + 2.1); 
+            } catch(e) {
+                console.error("Audio error:", e);
+            }
+        }
         }
 
         function stopCamera() {
