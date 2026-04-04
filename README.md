@@ -1,5 +1,7 @@
 # QR.G.B.-ART 🎨🔬
 
+![Preview](screenshot.png)
+
 **QR.G.B.-ART** — прототип генератора художественных QR-кодов с элементами Generative Art, спектральной нормализацией и поддержкой многослойного кодирования.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
@@ -17,14 +19,15 @@
 ## 📖 Научная база
 Проект реализует **Spectral Channel Integrity (SCI)** модель:
 
-> **Spectral Channel Integrity (SCI) Universal Model** > DOI: [10.5281/zenodo.18895764](https://doi.org/10.5281/zenodo.18895764)
+> **Spectral Channel Integrity (SCI) Universal Model**
+> DOI: [10.5281/zenodo.18895764](https://doi.org/10.5281/zenodo.18895764)
 
 Система анализирует отражательную способность пигментов и синхронизирует уровни яркости каналов, что позволяет использовать физические поверхности (холст, масло) как стабильные носители данных.
 
 ## 🛠 Технический стек
 * **Canvas API:** Динамическая отрисовка слоев с наложением `lighten`.
 * **Bradley Thresholding:** Алгоритм адаптивной бинаризации для стабильного сканирования текстурированных поверхностей.
-* **Lab-Color Space:** (В разработке) Расчет цветового контраста ΔE для автоматической верификации читаемости.
+* **Lab-Color Space:** Расчет цветового контраста ΔE для автоматической верификации читаемости.
 
 ## 🚀 Быстрый старт
 Проект доступен онлайн: [https://astra31415926.github.io/QRGB-Spectral-Encoding/](https://astra31415926.github.io/QRGB-Spectral-Encoding/)
