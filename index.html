@@ -392,10 +392,9 @@
                     if(!isFileScan) triggerCaptureSequence();
                 }
             }
-       function playSuccessSound() {
+          function playSuccessSound() {
             try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                const ctx = new AudioCtx();
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const now = ctx.currentTime;
                 const o = ctx.createOscillator();
                 const g = ctx.createGain();
@@ -403,15 +402,18 @@
                 o.connect(g); 
                 g.connect(ctx.destination);
 
+                // Используем 'triangle' для более глубокого, "дорогого" звука
                 o.type = 'triangle'; 
 
+                // Начинаем с высокого тона (1000 Гц) и плавно опускаем до баса (150 Гц)
                 o.frequency.setValueAtTime(1000, now);
                 o.frequency.exponentialRampToValueAtTime(150, now + 2.0);
 
+                // Плавное появление и затухание громкости, чтобы не было щелчков
                 g.gain.setValueAtTime(0, now);
-                g.gain.linearRampToValueAtTime(0.15, now + 0.3);
-                g.gain.setValueAtTime(0.15, now + 1.7);
-                g.gain.linearRampToValueAtTime(0, now + 2.0);
+                g.gain.linearRampToValueAtTime(0.15, now + 0.3); // Проявляется за 0.3 сек
+                g.gain.setValueAtTime(0.15, now + 1.7);         // Держится
+                g.gain.linearRampToValueAtTime(0, now + 2.0);   // Гаснет к концу
 
                 o.start(now);
                 o.stop(now + 2.1); 
@@ -419,12 +421,11 @@
                 console.error("Audio error:", e);
             }
         }
+        }
 
         function stopCamera() {
             scanning = false;
-            if (els.video.srcObject) {
-                els.video.srcObject.getTracks().forEach(t => t.stop());
-            }
+            if (els.video.srcObject) els.video.srcObject.getTracks().forEach(t => t.stop());
         }
 
         function scanFrame() {
@@ -461,11 +462,6 @@
                     els.main.style.opacity = 0;
                     processImageData(ctx.getImageData(0,0,s,s), s, s, true);
                     startVisualizationSequence();
-                };
-                img.src = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
                 };
                 img.src = ev.target.result;
             };
