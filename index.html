@@ -176,14 +176,28 @@
             </div>
         </div>
         
-   <div class="flex items-center gap-2">
-    <button id="menu-btn" class="w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90 transition-transform">☰</button>
-</div>
+        <div class="flex items-center gap-2">
+            <div class="lang-switch flex gap-1 bg-zinc-900 p-1 rounded-lg border border-white/5">
+                <div id="lang-uk" class="lang-btn active text-[10px] font-bold px-2 py-1 rounded cursor-pointer" onclick="setLanguage('uk')">UK</div>
+                <div id="lang-en" class="lang-btn text-[10px] font-bold px-2 py-1 rounded cursor-pointer" onclick="setLanguage('en')">EN</div>
+            </div>
+            <button id="menu-btn" class="w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90 transition-transform">☰</button>
+        </div>
+        
+        <div id="dropdown" class="dropdown-menu absolute top-full right-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-50 overflow-hidden">
+            <a href="#" onclick="openModal('usage')" class="block px-4 py-3.5 text-xs text-zinc-300 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_usage">Як користуватися</a>
+            <a href="#" onclick="openModal('tech')" class="block px-4 py-3.5 text-xs text-zinc-300 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_tech">Технологія SCI</a>
+            <a href="https://astra31415926.github.io/QRGB-Spectral-Encoding/vcard.vcf" class="block px-4 py-3.5 text-xs text-blue-400 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_contact">Скачати vCard</a>
+            <button onclick="globalReset()" class="w-full text-left px-4 py-3.5 text-xs text-red-400 hover:bg-zinc-800 font-bold uppercase tracking-wide" data-i18n="menu_reset">Reset</button>
+        </div>
+    </header>
 
-<div id="dropdown
-        <textarea id="r-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="RED CHANNEL"></textarea>
-    </div>
-    <div class="relative">
+    <div class="input-section space-y-2 mb-4 px-1">
+        <div class="relative">
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
+            <textarea id="r-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="RED CHANNEL"></textarea>
+        </div>
+        <div class="relative">
             <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-full"></div>
             <textarea id="g-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="GREEN CHANNEL"></textarea>
         </div>
@@ -256,33 +270,18 @@
         </div>
     </div>
 
-<script>
+    <script>
         // --- Translations & Config ---
         const translations = {
             uk: {
-                menu_usage: "Як користуватися", 
-                menu_tech: "Технологія", 
-                menu_reset: "Скинути все", 
-                menu_contact: "Скачати vCard",
-                btn_save: "Зберегти PNG", 
-                btn_camera: "Камера", 
-                btn_gallery: "Галерея", 
-                btn_close: "ЗАКРИТИ",
-                ph_r: "RED CHANNEL", 
-                ph_g: "GREEN CHANNEL", 
-                ph_b: "BLUE CHANNEL",
-                res_wait: "Сканування...", 
-                res_fail: "[!] Помилка",
+                menu_usage: "Як користуватися", menu_tech: "Технологія SCI", menu_reset: "Скинути все", menu_contact: "Скачати vCard",
+                btn_save: "Зберегти PNG", btn_camera: "Камера", btn_gallery: "Галерея", btn_close: "ЗАКРИТИ",
+                ph_r: "RED CHANNEL", ph_g: "GREEN CHANNEL", ph_b: "BLUE CHANNEL",
+                res_wait: "Сканування...", res_fail: "[!] Помилка",
                 m_usage_title: "📝 Інструкція", 
                 m_usage_body: "<p><b>1. Створення:</b> Введіть текст у поля R, G, B. Код сформується автоматично.</p><p><b>2. Сканування:</b> Натисніть 'Камера' та наведіть на кольоровий QR-код.</p><p><b>3. Результат:</b> Дані розподіляться по відповідних каналах.</p>",
-                m_tech_title: "⚙️ Технологія", 
-                m_tech_body: `<h3>Що вміє цей сайт?</h3>
-<p>Він зчитує кольорові QR-коди з фізичного носія. Я написав програму — і вона працює.</p>
-<h3>У чому суть методу?</h3>
-<p>Раніше кольорові QR-коди не стали масовими, бо при друку фарби змішувалися і створювали «шум». Мій метод вирішує це на рівні фізики: спеціально підібрані пігменти не заважають один одному.</p>
-<p><b>Результат:</b> кольоровий QR-код, який можна надрукувати і впевнено зчитати навіть з паперу.</p>
-<hr>
-<p>📄 Детальніше про фізику та підбір фарб — у дослідженні на <a href="https://doi.org/10.5281/zenodo.18895764" target="_blank" style="color: #0088FF;">Zenodo</a>.</p>`
+                m_tech_title: "⚙️ SCI Universal Model", 
+                m_tech_body: "<p><b>SCI (Spectral Channel Integrity)</b> — це модель детермінованої нормалізації спектрального відгуку, розроблена Михайлом Кашкаровим.</p><p>Вона дозволяє використовувати фізичні поверхні (наприклад, полотна, розписані фарбами) як носії даних, розділяючи канали RGB без перехресних перешкод.</p><p><a href='https://zenodo.org/records/18895764' style='color:#0088FF'>Читати повне дослідження на Zenodo</a></p>"
             },
             en: {
                 menu_usage: "How to use", menu_tech: "SCI Technology", menu_reset: "Reset All", menu_contact: "Download vCard",
