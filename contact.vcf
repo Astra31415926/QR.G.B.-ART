@@ -5,9 +5,9 @@ ORG;CHARSET=UTF-8:Science-Art Researcher; SCI Model Creator
 TITLE;CHARSET=UTF-8:Artist & Researcher
 EMAIL;TYPE=INTERNET:bakminsterfuler@gmail.com
 EMAIL;TYPE=INTERNET:colqrnament@gmail.com
-URL;TYPE=WORK:https://zenodo.org/records/18895764
-URL;TYPE=GITHUB:https://github.com/astra31415926
-URL;TYPE=BLOG:https://dev.to/astra31415926
-URL;TYPE=YOUTUBE:https://www.youtube.com/@Michael-RGB-ART
+URL:https://zenodo.org/records/18895764
+URL:https://github.com/astra31415926
+URL:https://dev.to/astra31415926
+URL:https://www.youtube.com/@Michael-RGB-ART
 NOTE;CHARSET=UTF-8:Creator of SCI Universal Model for Spectral QR Codes
 END:VCARD
