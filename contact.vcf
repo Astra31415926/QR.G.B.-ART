@@ -1,11 +1,10 @@
 BEGIN:VCARD
 VERSION:3.0
-FN;CHARSET=UTF-8:Mykhailo Kashkarov
-ORG;CHARSET=UTF-8:Science-Art Researcher; SCI Model Creator
-TITLE;CHARSET=UTF-8:Artist & Researcher
-EMAIL;TYPE=INTERNET:bakminsterfuler@gmail.com
-URL:https://zenodo.org/records/18895764
-URL;TYPE=YouTube:https://www.youtube.com/@Michael-RGB-ART
-URL;TYPE=Medium:https://medium.com/@Bakminsterfuler
-NOTE;CHARSET=UTF-8:Creator of the SCI Universal Model for Spectral Channel Integrity.
+FN:Ваше Имя
+ORG:QRGB Spectral Encoding
+EMAIL;TYPE=INTERNET:vasha-pochta@example.com
+TEL;TYPE=CELL:+380000000000
+URL;TYPE=YouTube:https://youtube.com/ваш-канал
+URL;TYPE=GitHub:https://github.com/astra31415926
+URL;TYPE=Telegram:https://t.me/vash-nic
 END:VCARD
