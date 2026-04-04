@@ -32,12 +32,10 @@
             transition: background 0.5s;
         }
         
-        /* --- Custom Scrollbar --- */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
-        /* --- Input Styling --- */
         textarea {
             background: rgba(20, 20, 20, 0.8);
             border: 1px solid rgba(255,255,255,0.1);
@@ -54,13 +52,11 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
-        /* --- Logo Colors --- */
         .logo-q { color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.8); }
         .logo-r { color: var(--r-color); text-shadow: 0 0 15px var(--r-color); }
         .logo-g { color: var(--g-color); text-shadow: 0 0 15px var(--g-color); }
         .logo-b { color: var(--b-color); text-shadow: 0 0 15px var(--b-color); }
 
-        /* --- Scan Animations --- */
         .scan-line { 
             position: absolute; left: 0; right: 0; height: 2px; 
             background: linear-gradient(90deg, transparent, var(--g-color), transparent); 
@@ -89,7 +85,6 @@
         }
         .flash-anim { animation: flash 0.4s ease-out; }
 
-        /* --- Result Indicators --- */
         .indicator { 
             width: 10px; height: 10px; border-radius: 50%; 
             background: #222; 
@@ -99,14 +94,12 @@
         .active-g { background: var(--g-color); box-shadow: 0 0 12px var(--g-color); }
         .active-b { background: var(--b-color); box-shadow: 0 0 12px var(--b-color); }
         
-        /* --- Dropdown --- */
         .dropdown-menu { 
             transform: translateY(-10px); opacity: 0; visibility: hidden; 
             transition: all 0.2s ease; 
         }
         .dropdown-menu.show { transform: translateY(0); opacity: 1; visibility: visible; }
         
-        /* --- Modal --- */
         .modal-overlay { 
             opacity: 0; visibility: hidden; transition: all 0.3s ease; 
             background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); 
@@ -115,7 +108,6 @@
         .modal-content { transform: scale(0.95); transition: transform 0.3s ease; }
         .modal-overlay.show .modal-content { transform: scale(1); }
 
-        /* --- Viewfinder Targeting --- */
         .viewfinder-corners {
             position: absolute;
             inset: 0;
@@ -134,22 +126,14 @@
         .bl { bottom: 0; left: 0; border-bottom: 3px solid; border-left: 3px solid; border-radius: 0 0 0 8px; }
         .br { bottom: 0; right: 0; border-bottom: 3px solid; border-right: 3px solid; border-radius: 0 0 8px 0; }
         
-        /* Targeting Active State */
         .targeting .corner { border-color: var(--g-color); box-shadow: 0 0 10px var(--g-color); }
         
-        /* --- UI State Management --- */
         .mode-camera .input-section { transform: translateY(100%); opacity: 0; pointer-events: none; }
         .mode-camera .central-block { height: 70vh; }
         
-        .input-section {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .central-block {
-            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .input-section { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .central-block { transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* --- Buttons --- */
         .btn-action {
             background: linear-gradient(145deg, #222, #1a1a1a);
             box-shadow: 5px 5px 15px #0a0a0a, -5px -5px 15px #1f1f1f;
@@ -157,10 +141,8 @@
         }
         .btn-action:active { transform: scale(0.96); box-shadow: inset 2px 2px 5px #000; }
 
-        /* Social Icons */
         .social-link { opacity: 0.5; transition: opacity 0.3s; }
         .social-link:hover { opacity: 1; }
-
     </style>
 </head>
 <body class="flex flex-col min-h-screen p-4 pb-6">
@@ -175,23 +157,25 @@
                 <span class="text-[8px] text-zinc-500 font-mono tracking-widest uppercase">SCI Engine by M.Kashkarov</span>
             </div>
         </div>
-<div class="flex items-center gap-2">
-        <button id="menu-btn" class="w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90 transition-transform">☰</button>
-    </div>
+        
+        <div class="flex items-center gap-2">
+            <button id="menu-btn" class="w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90 transition-transform">☰</button>
+        </div>
+        
+        <div id="dropdown" class="dropdown-menu absolute top-full right-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-50 overflow-hidden">
+            <div class="flex border-b border-white/10 p-1 bg-zinc-800/50">
+                <button onclick="setLanguage('uk')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors border-r border-white/5">🇺🇦 UK</button>
+                <button onclick="setLanguage('en')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors">🇬🇧 EN</button>
+            </div>
+            <div class="py-0">
+                <a href="#" onclick="openModal('usage')" class="block px-4 py-3.5 text-xs text-zinc-300 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_usage">Як користуватися</a>
+                <a href="#" onclick="openModal('tech')" class="block px-4 py-3.5 text-xs text-zinc-300 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_tech">Технологія</a>
+                <a href="https://astra31415926.github.io/QRGB-Spectral-Encoding/vcard.vcf" class="block px-4 py-3.5 text-xs text-blue-400 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_contact">Скачати vCard</a>
+                <button onclick="globalReset()" class="w-full text-left px-4 py-3.5 text-xs text-red-400 hover:bg-zinc-800 font-bold uppercase tracking-wide" data-i18n="menu_reset">Reset</button>
+            </div>
+        </div>
+    </header>
 
-    <div id="dropdown" class="dropdown-menu absolute top-full right-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-50 overflow-hidden">
-        <div class="flex border-b border-white/10 p-1 bg-zinc-800/50">
-            <button onclick="setLanguage('uk')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors border-r border-white/5">🇺🇦 UK</button>
-            <button onclick="setLanguage('en')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors">🇬🇧 EN</button>
-        </div>
-        <div class="py-0">
-            <a href="#" onclick="openModal('usage')" class="block px-4 py-3.5 text-xs text-zinc-300 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_usage">Як користуватися</a>
-            <a href="#" onclick="openModal('tech')" class="block px-4 py-3.5 text-xs text-zinc-300 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_tech">Технологія</a>
-            <a href="https://astra31415926.github.io/QRGB-Spectral-Encoding/vcard.vcf" class="block px-4 py-3.5 text-xs text-blue-400 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_contact">Скачати vCard</a>
-            <button onclick="globalReset()" class="w-full text-left px-4 py-3.5 text-xs text-red-400 hover:bg-zinc-800 font-bold uppercase tracking-wide" data-i18n="menu_reset">Reset</button>
-        </div>
-    </div>
-</header>
     <div class="input-section space-y-2 mb-4 px-1">
         <div class="relative">
             <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
@@ -271,7 +255,6 @@
     </div>
 
 <script>
-        // --- Translations & Config ---
         const translations = {
             uk: {
                 menu_usage: "Як користуватися", 
@@ -290,13 +273,7 @@
                 m_usage_title: "📝 Інструкція", 
                 m_usage_body: "<p><b>1. Створення:</b> Введіть текст у поля R, G, B. Код сформується автоматично.</p><p><b>2. Сканування:</b> Натисніть 'Камера' та наведіть на кольоровий QR-код.</p><p><b>3. Результат:</b> Дані розподіляться по відповідних каналах.</p>",
                 m_tech_title: "⚙️ Технологія", 
-                m_tech_body: `<h3>Що вміє цей сайт?</h3>
-<p>Він зчитує кольорові QR-коди з фізичного носія. Я написав програму — і вона працює.</p>
-<h3>У чому суть методу?</h3>
-<p>Раніше кольорові QR-коди не стали масовими, бо при друку фарби змішувалися і створювали «шум». Мій метод вирішує це на рівні фізики: спеціально підібрані пігменти не заважають один одному.</p>
-<p><b>Результат:</b> кольоровий QR-код, який можна надрукувати і впевнено зчитати навіть з паперу.</p>
-<hr>
-<p>📄 Детальніше про фізику та підбір фарб — у дослідженні на <a href="https://doi.org/10.5281/zenodo.18895764" target="_blank" style="color: #0088FF;">Zenodo</a>.</p>`
+                m_tech_body: `<h3>Що вміє цей сайт?</h3><p>Він зчитує кольорові QR-коди з фізичного носія. Я написав програму — і вона працює.</p><h3>У чому суть методу?</h3><p>Раніше кольорові QR-коди не стали масовими, бо при друку фарби змішувалися і створювали «шум». Мій метод вирішує це на рівні фізики: спеціально підібрані пігменти не заважають один одному.</p><p><b>Результат:</b> кольоровий QR-код, який можна надрукувати і впевнено зчитати навіть з паперу.</p><hr><p>📄 Детальніше про фізику та підбір фарб — у дослідженні на <a href="https://doi.org/10.5281/zenodo.18895764" target="_blank" style="color: #0088FF;">Zenodo</a>.</p>`
             },
             en: {
                 menu_usage: "How to use", menu_tech: "SCI Technology", menu_reset: "Reset All", menu_contact: "Download vCard",
@@ -317,7 +294,8 @@
             centralContainer: document.getElementById('central-container'), flash: document.getElementById('flash-layer'),
             resultIndicators: document.getElementById('result-indicators'),
             resR: document.getElementById('res-r'), resG: document.getElementById('res-g'), resB: document.getElementById('res-b'),
-            viewfinder: document.getElementById('viewfinder-ui')
+            viewfinder: document.getElementById('viewfinder-ui'),
+            dropdown: document.getElementById('dropdown')
         };
 
         let currentLang = 'uk';
@@ -550,8 +528,6 @@
             els.r.placeholder = translations[l].ph_r;
             els.g.placeholder = translations[l].ph_g;
             els.b.placeholder = translations[l].ph_b;
-            document.getElementById('lang-uk').className = `lang-btn ${l==='uk'?'active':''}`;
-            document.getElementById('lang-en').className = `lang-btn ${l==='en'?'active':''}`;
         }
 
         function prepareScannerUI() {
@@ -579,14 +555,18 @@
             document.getElementById('modal-title').textContent = translations[currentLang]['m_'+t+'_title'];
             document.getElementById('modal-body').innerHTML = translations[currentLang]['m_'+t+'_body'];
             document.getElementById('modal-overlay').classList.add('show');
+            els.dropdown.classList.remove('show');
         }
         function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
         function triggerFileInput() { document.getElementById('file-input').click(); }
         function saveQR() { const a = document.createElement('a'); a.download = 'RGB11_Result.png'; a.href = els.main.toDataURL(); a.click(); }
 
         [els.r, els.g, els.b].forEach(el => el.addEventListener('input', generateQR));
-        document.getElementById('menu-btn').onclick = (e) => { e.stopPropagation(); document.getElementById('dropdown').classList.toggle('show'); };
-        document.onclick = () => document.getElementById('dropdown').classList.remove('show');
+        document.getElementById('menu-btn').onclick = (e) => { 
+            e.stopPropagation(); 
+            els.dropdown.classList.toggle('show'); 
+        };
+        document.onclick = () => els.dropdown.classList.remove('show');
         
         setLanguage('uk');
         generateQR();
