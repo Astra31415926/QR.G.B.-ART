@@ -1,4 +1,5 @@
-<link rel="manifest" href="manifest.json">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#8e44ad">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="icon" type="image/png" href="icon-192.png">
@@ -179,35 +180,6 @@
             </div>
         </div>
     </header>
-    <script>
-        function downloadVCard() {
-            const vcard = `BEGIN:VCARD
-VERSION:3.0
-FN;CHARSET=UTF-8:Mykhailo Kashkarov
-ORG;CHARSET=UTF-8:Science-Art Researcher; SCI Model Creator
-TITLE;CHARSET=UTF-8:Artist & Researcher
-EMAIL;TYPE=WORK:bakminsterfuler@gmail.com
-EMAIL;TYPE=HOME:colqrnament@gmail.com
-URL:https://zenodo.org/records/18895764
-URL:https://github.com/astra31415926
-URL:https://dev.to/astra31415926
-URL:https://www.youtube.com/@Michael-RGB-ART
-NOTE;CHARSET=UTF-8:Creator of SCI Universal Model for Spectral QR Codes
-END:VCARD`;
-          const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'Kashkarov_Contact.vcf';
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            }, 100);
-        }
-    </script>
 
     <div class="input-section space-y-2 mb-4 px-1">
         <div class="relative">
