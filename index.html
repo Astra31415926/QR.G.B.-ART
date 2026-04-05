@@ -162,7 +162,7 @@
             <button id="menu-btn" class="w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90 transition-transform">☰</button>
         </div>
         
-       <div id="dropdown" class="dropdown-menu absolute top-full right-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-50 overflow-hidden">
+   <div id="dropdown" class="dropdown-menu absolute top-full right-0 mt-2 w-56 bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-50 overflow-hidden">
             <div class="flex border-b border-white/10 p-1 bg-zinc-800/50">
                 <button onclick="setLanguage('uk')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors border-r border-white/5">🇺🇦 UK</button>
                 <button onclick="setLanguage('en')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors">🇬🇧 EN</button>
@@ -170,12 +170,11 @@
             <div class="py-0">
                 <a href="#" onclick="openModal('usage')" class="block px-4 py-3.5 text-xs text-zinc-300 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_usage">Як користуватися</a>
                 <a href="#" onclick="openModal('tech')" class="block px-4 py-3.5 text-xs text-zinc-300 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_tech">Технологія</a>
-                <a href="#" onclick="downloadVCard(); return false;" class="block px-4 py-3.5 text-xs text-blue-400 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_contact">Скачати vCard</a>
+                <a href="#" onclick="const vcard='BEGIN:VCARD\nVERSION:3.0\nFN;CHARSET=UTF-8:Mykhailo Kashkarov\nORG;CHARSET=UTF-8:Science-Art Researcher; SCI Model Creator\nTITLE;CHARSET=UTF-8:Artist & Researcher\nEMAIL;TYPE=WORK:bakminsterfuler@gmail.com\nEMAIL;TYPE=HOME:colqrnament@gmail.com\nURL:https://zenodo.org/records/18895764\nURL:https://github.com/astra31415926\nURL:https://dev.to/astra31415926\nURL:https://www.youtube.com/@Michael-RGB-ART\nNOTE;CHARSET=UTF-8:Creator of SCI Universal Model for Spectral QR Codes\nEND:VCARD'; const blob=new Blob([vcard],{type:'text/vcard;charset=utf-8'}); const url=window.URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='Kashkarov_Contact.vcf'; a.click(); window.URL.revokeObjectURL(url); return false;" class="block px-4 py-3.5 text-xs text-blue-400 hover:bg-zinc-800 border-b border-white/5" data-i18n="menu_contact">Скачати vCard</a>
                 <button onclick="globalReset()" class="w-full text-left px-4 py-3.5 text-xs text-red-400 hover:bg-zinc-800 font-bold uppercase tracking-wide" data-i18n="menu_reset">Reset</button>
             </div>
         </div>
     </header>
-
     <script>
         function downloadVCard() {
             const vcard = `BEGIN:VCARD
