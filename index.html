@@ -1,9 +1,12 @@
 <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#8e44ad">
     <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js');
+        });
       }
     </script>
     
@@ -12,9 +15,7 @@
     <meta name="keywords" content="qr rgb, spectral qr, sci encoder, Mikhail Kashkarov, science art">
     <meta property="og:title" content="RGB-11 QR Encoder">
     <meta property="og:description" content="3 QR in 1 image! Based on SCI Universal Model.">
-    <meta property="og:image" content="screenshot.png">
-    <link rel="canonical" href="https://astra31415926.github.io/RGB-11/">
-
+    <link rel="canonical" href="https://astra31415926.github.io/QR.G.B.-ART/">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
