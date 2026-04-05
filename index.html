@@ -489,31 +489,8 @@ END:VCARD`;
                     el.style.opacity = 0.4;
                     text.textContent = translations[currentLang].res_fail;
                 }
-            });
-            generateQR();
-            document.body.classList.remove('mode-camera');
-        }
-        async function startCamera() {
-            globalReset();
-            document.body.classList.add('mode-camera');
-            els.viewfinder.classList.remove('hidden');
-            els.resultIndicators.style.opacity = 0.7;
-            try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: {ideal: 1280} } });
-                els.video.srcObject = s; 
-                els.video.play();
-                els.video.classList.remove('hidden');
-                els.main.style.opacity = 0;
-                els.freeze.classList.add('hidden');
-                scanning = true; 
-                requestAnimationFrame(scanFrame);
-            } catch(e) { alert("Camera Error: " + e); }
-        }
-
-        function stopCamera() {
-            scanning = false;
-            if (els.video.srcObject) els.video.srcObject.getTracks().forEach(t => t.stop());
-        }
+        let scanState = { r: null, g: null, b: null };
+        let stabilityCounter = 0;
 
         function scanFrame() {
             if (!scanning) return;
@@ -521,62 +498,60 @@ END:VCARD`;
                 const cv = document.createElement('canvas');
                 cv.width = 480; cv.height = 480;
                 const s = Math.min(els.video.videoWidth, els.video.videoHeight);
-                cv.getContext('2d').drawImage(els.video, (els.video.videoWidth-s)/2, (els.video.videoHeight-s)/2, s, s, 0, 0, 480, 480);
+                const ctx = cv.getContext('2d');
+                ctx.drawImage(els.video, (els.video.videoWidth-s)/2, (els.video.videoHeight-s)/2, s, s, 0, 0, 480, 480);
+                
                 if(!analysisReady) {
-                   const found = processImageData(cv.getContext('2d').getImageData(0,0,480,480), 480, 480, false);
-                   if(found) els.viewfinder.classList.add('targeting');
+                    const imgData = ctx.getImageData(0,0,480,480);
+                    // Викликаємо обробку (передаємо дані кадру)
+                    const frameResults = processImageData(imgData, 480, 480, false);
+                    
+                    // Якщо функція повернула результати, записуємо їх у накопичувач
+                    let foundAny = false;
+                    if (frameResults && typeof frameResults === 'object') {
+                        ['r', 'g', 'b'].forEach(ch => {
+                            if (frameResults[ch] && !scanState[ch]) {
+                                scanState[ch] = frameResults[ch];
+                                foundAny = true;
+                            }
+                        });
+                    }
+
+                    if (foundAny || (frameResults === true)) {
+                        stabilityCounter++;
+                        els.viewfinder.classList.add('targeting');
+                        // Візуальне поощрення: рамка починає світитися сильніше
+                        els.viewfinder.style.boxShadow = `0 0 ${Math.min(stabilityCounter * 3, 40)}px rgba(0,255,150,0.6)`;
+                        els.viewfinder.style.borderColor = `rgba(0, 255, 150, ${0.3 + (stabilityCounter/20)})`;
+                    } else {
+                        stabilityCounter = Math.max(0, stabilityCounter - 1);
+                        if (stabilityCounter === 0) {
+                            els.viewfinder.classList.remove('targeting');
+                            els.viewfinder.style.boxShadow = 'none';
+                            els.viewfinder.style.borderColor = '';
+                        }
+                    }
+
+                    // Умова успіху: зібрали всі 3 канали АБО тримаємо фокус достатньо довго
+                    const foundCount = ['r', 'g', 'b'].filter(ch => scanState[ch]).length;
+                    
+                    if (foundCount === 3 || (foundCount > 0 && stabilityCounter > 25)) {
+                        results = { ...scanState };
+                        analysisReady = true;
+                        triggerCaptureSequence();
+                    }
                 }
             }
             requestAnimationFrame(scanFrame);
         }
 
-        function handleFile(e) {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = new Image();
-                img.onload = () => {
-                    prepareScannerUI();
-                    const s = 1024, cv = document.createElement('canvas');
-                    cv.width = s; cv.height = s;
-                    const ctx = cv.getContext('2d');
-                    const min = Math.min(img.width, img.height);
-                    ctx.drawImage(img, (img.width-min)/2, (img.height-min)/2, min, min, 0, 0, s, s);
-                    els.freeze.width = 480; els.freeze.height = 480;
-                    els.freeze.getContext('2d').drawImage(cv, 0, 0, 480, 480);
-                    els.freeze.classList.remove('hidden'); 
-                    els.video.classList.add('hidden');
-                    els.main.style.opacity = 0;
-                    processImageData(ctx.getImageData(0,0,s,s), s, s, true);
-                    startVisualizationSequence();
-                };
-                img.src = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function setLanguage(l) {
-            currentLang = l;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[l][key]) el.textContent = translations[l][key];
-            });
-            els.r.placeholder = translations[l].ph_r;
-            els.g.placeholder = translations[l].ph_g;
-            els.b.placeholder = translations[l].ph_b;
-        }
-
-        function prepareScannerUI() {
-            results = {r:null, g:null, b:null}; analysisReady = false;
-            els.main.style.opacity = 0;
-            els.resultIndicators.style.opacity = 0;
-            els.centralContainer.classList.remove('scan-active');
-        }
-
         function globalReset() {
             stopCamera(); 
             els.r.value = ""; els.g.value = ""; els.b.value = "";
-            results = {r:null, g:null, b:null}; analysisReady = false;
+            results = {r:null, g:null, b:null}; 
+            scanState = {r:null, g:null, b:null}; 
+            stabilityCounter = 0;
+            analysisReady = false;
             generateQR(); 
             els.resultIndicators.style.opacity = 0;
             els.centralContainer.classList.remove('scan-active');
@@ -584,28 +559,7 @@ END:VCARD`;
             els.freeze.classList.add('hidden');
             els.video.classList.add('hidden');
             els.viewfinder.classList.add('hidden');
+            els.viewfinder.style.boxShadow = 'none';
+            els.viewfinder.style.borderColor = '';
             document.body.classList.remove('mode-camera');
         }
-
-        function openModal(t) {
-            document.getElementById('modal-title').textContent = translations[currentLang]['m_'+t+'_title'];
-            document.getElementById('modal-body').innerHTML = translations[currentLang]['m_'+t+'_body'];
-            document.getElementById('modal-overlay').classList.add('show');
-            els.dropdown.classList.remove('show');
-        }
-        function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
-        function triggerFileInput() { document.getElementById('file-input').click(); }
-        function saveQR() { const a = document.createElement('a'); a.download = 'RGB11_Result.png'; a.href = els.main.toDataURL(); a.click(); }
-
-        [els.r, els.g, els.b].forEach(el => el.addEventListener('input', generateQR));
-        document.getElementById('menu-btn').onclick = (e) => { 
-            e.stopPropagation(); 
-            els.dropdown.classList.toggle('show'); 
-        };
-        document.onclick = () => els.dropdown.classList.remove('show');
-        
-        setLanguage('uk');
-        generateQR();
-    </script>
-</body>
-</html>
