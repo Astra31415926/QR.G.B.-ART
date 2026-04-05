@@ -388,7 +388,7 @@ END:VCARD`;
             ctx.fillStyle = "#000"; ctx.fillRect(0,0,512,512);
             ctx.globalCompositeOperation = "lighten";
             
-          texts.forEach((text, i) => {
+            texts.forEach((text, i) => {
                 if(!text.trim()) return;
                 const qr = qrcode(maxVer, 'M'); 
                 qr.addData(unescape(encodeURIComponent(text))); qr.make();
@@ -405,43 +405,27 @@ END:VCARD`;
             els.mini.getContext('2d').drawImage(els.main, 0, 0, 32, 32);
         }
 
-        let scanState = { r: null, g: null, b: null };
-        let stability = 0;
-
         function processImageData(img, w, h, isFileScan) {
-            let foundInFrame = false;
+            let foundAny = false;
             [0, 1, 2].forEach(idx => {
                 const ch = ['r', 'g', 'b'][idx];
-                if (scanState[ch]) return; 
+                if (results[ch]) return;
                 const mono = applyBradley(img, idx);
                 const code = jsQR(mono, w, h, { inversionAttempts: "attemptBoth" });
-                if (code) { 
-                    scanState[ch] = code.data; 
-                    foundInFrame = true; 
-                }
+                if (code) { results[ch] = code.data; foundAny = true; }
             });
             
-            if (foundInFrame || scanState.r || scanState.g || scanState.b) {
-                stability++;
-                els.viewfinder.classList.add('targeting');
-                els.viewfinder.style.boxShadow = `0 0 ${Math.min(stability * 2, 40)}px rgba(0, 255, 150, 0.7)`;
-            } else {
-                stability = Math.max(0, stability - 2);
-                if(stability === 0) els.viewfinder.classList.remove('targeting');
+            if(foundAny) {
+                els.viewfinder.classList.add('targeting'); 
+                if(results.b || (results.r && results.g && results.b)) {
+                    analysisReady = true;
+                    if(!isFileScan) triggerCaptureSequence();
+                }
             }
-
-            const totalFound = ['r', 'g', 'b'].filter(ch => scanState[ch]).length;
-            
-            if (totalFound === 3 || (totalFound > 0 && stability > 35)) {
-                results = { ...scanState };
-                analysisReady = true;
-                if(!isFileScan) triggerCaptureSequence();
-                return true;
-            }
-            return foundInFrame;
+            return foundAny;
         }
 
-        function triggerCaptureSequence() {
+      function triggerCaptureSequence() {
             stopCamera();
             els.freeze.width = 480; els.freeze.height = 480;
             const fctx = els.freeze.getContext('2d');
@@ -462,7 +446,6 @@ END:VCARD`;
                     els.flash.classList.remove('flash-anim');
                     els.centralContainer.classList.remove('scan-active');
                     els.viewfinder.classList.remove('targeting');
-                    els.viewfinder.style.boxShadow = 'none';
                     updateResultUI();
                 }, 400);
             }, 2600);
@@ -474,13 +457,16 @@ END:VCARD`;
                 const now = ctx.currentTime;
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
+
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(200, now);
                 osc.frequency.exponentialRampToValueAtTime(1200, now + 2.5);
+
                 gain.gain.setValueAtTime(0, now);
                 gain.gain.linearRampToValueAtTime(0.05, now + 0.5);
                 gain.gain.setValueAtTime(0.05, now + 2.0);
                 gain.gain.linearRampToValueAtTime(0, now + 2.5);
+
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start(now);
@@ -507,7 +493,6 @@ END:VCARD`;
             generateQR();
             document.body.classList.remove('mode-camera');
         }
-
         async function startCamera() {
             globalReset();
             document.body.classList.add('mode-camera');
@@ -538,7 +523,8 @@ END:VCARD`;
                 const s = Math.min(els.video.videoWidth, els.video.videoHeight);
                 cv.getContext('2d').drawImage(els.video, (els.video.videoWidth-s)/2, (els.video.videoHeight-s)/2, s, s, 0, 0, 480, 480);
                 if(!analysisReady) {
-                   processImageData(cv.getContext('2d').getImageData(0,0,480,480), 480, 480, false);
+                   const found = processImageData(cv.getContext('2d').getImageData(0,0,480,480), 480, 480, false);
+                   if(found) els.viewfinder.classList.add('targeting');
                 }
             }
             requestAnimationFrame(scanFrame);
@@ -561,7 +547,6 @@ END:VCARD`;
                     els.freeze.classList.remove('hidden'); 
                     els.video.classList.add('hidden');
                     els.main.style.opacity = 0;
-                    scanState = { r: null, g: null, b: null };
                     processImageData(ctx.getImageData(0,0,s,s), s, s, true);
                     startVisualizationSequence();
                 };
@@ -582,9 +567,7 @@ END:VCARD`;
         }
 
         function prepareScannerUI() {
-            results = {r:null, g:null, b:null}; 
-            scanState = {r:null, g:null, b:null};
-            analysisReady = false;
+            results = {r:null, g:null, b:null}; analysisReady = false;
             els.main.style.opacity = 0;
             els.resultIndicators.style.opacity = 0;
             els.centralContainer.classList.remove('scan-active');
@@ -593,10 +576,7 @@ END:VCARD`;
         function globalReset() {
             stopCamera(); 
             els.r.value = ""; els.g.value = ""; els.b.value = "";
-            results = {r:null, g:null, b:null}; 
-            scanState = {r:null, g:null, b:null};
-            stability = 0;
-            analysisReady = false;
+            results = {r:null, g:null, b:null}; analysisReady = false;
             generateQR(); 
             els.resultIndicators.style.opacity = 0;
             els.centralContainer.classList.remove('scan-active');
@@ -604,7 +584,6 @@ END:VCARD`;
             els.freeze.classList.add('hidden');
             els.video.classList.add('hidden');
             els.viewfinder.classList.add('hidden');
-            els.viewfinder.style.boxShadow = 'none';
             document.body.classList.remove('mode-camera');
         }
 
@@ -627,5 +606,6 @@ END:VCARD`;
         
         setLanguage('uk');
         generateQR();
+    </script>
 </body>
 </html>
