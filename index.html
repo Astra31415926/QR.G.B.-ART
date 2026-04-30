@@ -15,7 +15,7 @@
       }
     </script>
     
-    <title>Spectrum-3D-QR | SCI Encoder</title>
+    <title>Spectrum QR | SCI Encoder</title>
     <meta name="description" content="Spectral Channel Indexing QR Encoder/Decoder">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -77,7 +77,7 @@
         /* Inputs */
         textarea {
             background: rgba(10, 10, 10, 0.8);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.1);
             color: #fff;
             font-family: 'Inter', sans-serif;
             resize: none;
@@ -159,27 +159,33 @@
 <body class="p-4 pb-6">
 
     <!-- ===================== GLOBAL ASSETS ===================== -->
-    <!-- Single Canvas/Video moved by JS -->
     <input type="file" id="file-input" accept="image/*" class="hidden">
     
     <!-- ===================== SCREEN: HOME ===================== -->
     <div id="screen-home" class="screen active">
-        <header class="flex items-center justify-center p-4 relative z-50 h-20">
-            <h1 class="text-3xl logo-spectrum flex gap-0">
+        <header class="flex items-center justify-center relative z-50 h-20 mb-4">
+            <!-- Empty spacer left to balance menu -->
+            <div class="w-10 h-10"></div>
+            
+            <!-- Centered Title -->
+            <h1 class="text-3xl logo-spectrum flex gap-0 absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
                 <span class="l-s">S</span><span class="l-p">p</span><span class="l-e">e</span><span class="l-c">c</span><span class="l-t">t</span><span class="l-r">r</span><span class="l-u">u</span><span class="l-m">m</span>
-                <span class="logo-text ml-2">3D-QR</span>
+                <span class="logo-rest ml-2">QR</span>
             </h1>
-            <button id="menu-btn-home" class="absolute right-4 w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90">☰</button>
+            
+            <!-- Menu Right -->
+            <button id="menu-btn-home" class="absolute right-0 w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90">☰</button>
         </header>
 
-        <main class="flex-1 flex flex-col items-center justify-center px-6 pb-10 text-center">
-            <div class="text-sm text-zinc-400 mb-10 leading-relaxed max-w-md bg-zinc-900/30 p-5 rounded-2xl border border-white/5">
-                <p class="font-bold text-white mb-3 text-base">Генератор і сканер кольорових QR-кодів</p>
-                <p class="mb-3 text-xs">
-                    Технологія кодування даних у каналах RGB (SCI Model). Збільшує обсяг даних у 3 рази.
+        <main class="flex-1 flex flex-col items-center justify-center px-2 pb-10 text-center">
+            <!-- Consistent Large Font Text Block -->
+            <div class="text-base text-zinc-300 mb-10 leading-relaxed max-w-md bg-zinc-900/30 p-6 rounded-2xl border border-white/5">
+                <p class="font-bold text-white mb-4 text-lg">Генератор і сканер кольорових QR-кодів</p>
+                <p class="mb-4">
+                    Інформація кодується в каналах RGB, що дозволяє збільшити обсяг даних до 3 разів порівняно зі звичайними QR-кодами.
                 </p>
-                <p class="text-zinc-500 text-[11px]">
-                    *Стандартні сканери не читають ці коди. Використовуйте цей додаток.
+                <p class="text-zinc-400">
+                    Такі коди не зчитуються стандартними чорно-білими сканерами.
                 </p>
             </div>
 
@@ -194,16 +200,16 @@
         </main>
         
         <footer class="p-4 text-center">
-             <p class="text-[10px] text-zinc-700">© 2026 Mihail Kashkarov | SCI Universal Model</p>
+             <p class="text-xs text-zinc-700">© 2026 Mykhailo Kashkarov | Science Artist</p>
         </footer>
     </div>
 
     <!-- ===================== SCREEN: CREATE ===================== -->
     <div id="screen-create" class="screen">
         <header class="flex items-center p-4 border-b border-white/10 relative z-20 h-16">
-            <button onclick="globalReset(); switchScreen('home');" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
+            <button onclick="hardReset()" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
             <div class="flex-1 text-center">
-                <h1 class="text-xl font-black tracking-tighter logo-text">Spectrum-3D-QR</h1>
+                <h1 class="text-xl font-black tracking-tighter logo-text">Spectrum QR</h1>
             </div>
             <button id="menu-btn-create" class="w-10 h-10 flex items-center justify-center text-white text-xl z-10 active:scale-90 transition-transform">☰</button>
         </header>
@@ -225,7 +231,7 @@
 
         <div class="flex-1 flex flex-col items-center justify-center p-4 relative">
             <div id="container-create" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl p-4 border border-white/5 shadow-2xl overflow-hidden">
-                <!-- Canvas gets injected here -->
+                <!-- Canvas injected here -->
             </div>
         </div>
 
@@ -237,16 +243,32 @@
     <!-- ===================== SCREEN: SCAN ===================== -->
     <div id="screen-scan" class="screen">
         <header class="flex items-center p-4 border-b border-white/10 relative z-20 h-16">
-            <button onclick="globalReset(); switchScreen('home');" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
+            <button onclick="hardReset()" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
             <div class="flex-1 text-center">
                 <h1 class="text-xl font-black tracking-tighter">Сканування</h1>
             </div>
             <div class="w-10 h-10"></div>
         </header>
 
+        <!-- Inputs Top (QRGB-13 Layout) -->
+        <div class="p-4 space-y-2 flex-shrink-0">
+            <div class="relative">
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
+                <textarea id="r-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="RED CHANNEL" readonly></textarea>
+            </div>
+            <div class="relative">
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-full"></div>
+                <textarea id="g-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="GREEN CHANNEL" readonly></textarea>
+            </div>
+            <div class="relative">
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-full"></div>
+                <textarea id="b-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="BLUE CHANNEL" readonly></textarea>
+            </div>
+        </div>
+
         <div class="flex-1 flex flex-col items-center justify-center p-4 relative">
              <div id="container-scan" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center">
-                 <!-- Video/Canvas gets injected here -->
+                 <!-- Video/Canvas injected here -->
              </div>
         </div>
 
@@ -264,24 +286,25 @@
     <div id="dropdown" class="dropdown-menu fixed top-4 right-4 w-72 bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-[100] overflow-hidden">
         <div class="flex border-b border-white/10 p-1 bg-zinc-800/50">
             <button onclick="setLanguage('uk')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors border-r border-white/5">🇺🇦 UA</button>
-            <button onclick="setLanguage('en')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors border-r border-white/5">🇬🇧 EN</button>
-            <button onclick="setLanguage('ru')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors">🇷🇺 RU</button>
+            <button onclick="setLanguage('en')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors">🇬🇧 EN</button>
         </div>
         <div class="p-4 text-xs space-y-3">
             <div class="text-zinc-400">
-                <h3 class="font-bold text-white mb-1">⚙️ Технологія</h3>
-                <p class="leading-relaxed">Кольорові QR-коди коректно зчитуються в цифровому вигляді. Для перенесення на фізичний носій звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів.</p>
+                <h3 class="font-bold text-white mb-1">⚙️ Технологія друку</h3>
+                <p class="leading-relaxed">Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. Для успішного перенесення цифрового коду на фізичний носій необхідно враховувати принципи, описані в:</p>
+                <a href="https://zenodo.org/records/19633526" target="_blank" class="text-blue-400 hover:underline block mt-1 text-[11px]">Zenodo: SCI Model</a>
             </div>
             <div class="border-t border-white/10 pt-3 space-y-2 text-zinc-400">
-                <div>📞 <a href="tel:+380635058292" class="hover:text-white">063 505 82 92</a></div>
+                <div class="font-bold text-white">Mykhailo Kashkarov</div>
                 <div>📧 <a href="mailto:colqrnament@gmail.com" class="hover:text-white">colqrnament@gmail.com</a></div>
+                <div>📞 <a href="tel:+380635058292" class="hover:text-white">063 505 82 92</a></div>
                 <div>💻 <a href="https://github.com/Astra31415926" target="_blank" class="hover:text-white text-[11px] block truncate">github.com/Astra31415926</a></div>
                 <div>🌐 <a href="https://astra31415926.github.io/" target="_blank" class="hover:text-white text-[11px] block truncate">astra31415926.github.io</a></div>
             </div>
         </div>
     </div>
 
-    <!-- ===================== MODAL OVERLAY ===================== -->
+    <!-- ===================== FLASH LAYER ===================== -->
     <div id="flash-layer" class="fixed inset-0 bg-white opacity-0 pointer-events-none z-[200]"></div>
 
 <script>
@@ -310,13 +333,17 @@
         r: document.getElementById('r-text'), 
         g: document.getElementById('g-text'), 
         b: document.getElementById('b-text'),
-        main: document.createElement('canvas'), // Created dynamically
-        video: document.createElement('video'), // Created dynamically
-        freeze: document.createElement('canvas'), // Created dynamically
-        ctx: null, // Assigned after creation
-        fCtx: null, // Assigned after creation
+        rScan: document.getElementById('r-text-scan'), 
+        gScan: document.getElementById('g-text-scan'), 
+        bScan: document.getElementById('b-text-scan'),
+        
+        main: document.createElement('canvas'),
+        video: document.createElement('video'),
+        freeze: document.createElement('canvas'),
+        ctx: null,
+        fCtx: null,
         flash: document.getElementById('flash-layer'),
-        viewfinder: document.createElement('div'), // Created dynamically
+        viewfinder: document.createElement('div'),
         dropdown: document.getElementById('dropdown'),
         containers: {
             create: document.getElementById('container-create'),
@@ -342,16 +369,21 @@
     // === 2. TRANSLATIONS ===
     const translations = {
         uk: { ph_r: "RED CHANNEL", ph_g: "GREEN CHANNEL", ph_b: "BLUE CHANNEL" },
-        en: { ph_r: "RED CHANNEL", ph_g: "GREEN CHANNEL", ph_b: "BLUE CHANNEL" },
-        ru: { ph_r: "КРАСНЫЙ КАНАЛ", ph_g: "ЗЕЛЕНЫЙ КАНАЛ", ph_b: "СИНИЙ КАНАЛ" }
+        en: { ph_r: "RED CHANNEL", ph_g: "GREEN CHANNEL", ph_b: "BLUE CHANNEL" }
     };
     let currentLang = 'uk';
 
     function setLanguage(l) {
         currentLang = l;
-        els.r.placeholder = translations[l].ph_r;
-        els.g.placeholder = translations[l].ph_g;
-        els.b.placeholder = translations[l].ph_b;
+        const ph = translations[l];
+        
+        els.r.placeholder = ph.ph_r;
+        els.g.placeholder = ph.ph_g;
+        els.b.placeholder = ph.ph_b;
+        
+        els.rScan.placeholder = ph.ph_r;
+        els.gScan.placeholder = ph.ph_g;
+        els.bScan.placeholder = ph.ph_b;
     }
 
     // === 3. ALGORITHMS (QRGB-13 Logic) ===
@@ -499,11 +531,18 @@
         els.viewfinder.classList.add('viewfinder-hunting');
         setTimeout(() => els.viewfinder.classList.remove('viewfinder-hunting'), 300);
 
-        // Fill Input on Create Screen
-        const inputEl = els[key];
-        if (inputEl) {
-            inputEl.value = data;
-            inputEl.classList.add('locked', 'locked-'+key);
+        // Fill Inputs on SCAN screen
+        const inputScan = els[key + 'Scan'];
+        if (inputScan) {
+            inputScan.value = data;
+            inputScan.classList.add('locked', 'locked-'+key);
+        }
+        
+        // Also fill Inputs on CREATE screen (in background)
+        const inputCreate = els[key];
+        if (inputCreate) {
+            inputCreate.value = data;
+            inputCreate.classList.add('locked', 'locked-'+key);
         }
 
         // Check Completion
@@ -553,8 +592,22 @@
     }
 
     async function startCamera() {
-        globalReset(); // Clear previous data
+        // Clear previous results but stay on Scan screen
+        state.locked = {r:false, g:false, b:false};
+        state.results = {r:null, g:null, b:null};
+        state.activeSearch = false;
+        state.standardFailCount = 0;
         
+        els.rScan.value = ""; els.gScan.value = ""; els.bScan.value = "";
+        els.rScan.classList.remove('locked', 'locked-r');
+        els.gScan.classList.remove('locked', 'locked-g');
+        els.bScan.classList.remove('locked', 'locked-b');
+        
+        els.r.value = ""; els.g.value = ""; els.b.value = ""; // Sync create fields
+        els.r.classList.remove('locked', 'locked-r');
+        els.g.classList.remove('locked', 'locked-g');
+        els.b.classList.remove('locked', 'locked-b');
+
         els.viewfinder.classList.remove('hidden');
         els.video.classList.remove('hidden');
         els.freeze.classList.add('hidden');
@@ -574,7 +627,21 @@
         const file = e.target.files[0]; 
         if (!file) return;
         
-        globalReset();
+        // Reset state
+        state.locked = {r:false, g:false, b:false};
+        state.results = {r:null, g:null, b:null};
+        state.activeSearch = false;
+        state.standardFailCount = 0;
+
+        els.rScan.value = ""; els.gScan.value = ""; els.bScan.value = "";
+        els.rScan.classList.remove('locked', 'locked-r');
+        els.gScan.classList.remove('locked', 'locked-g');
+        els.bScan.classList.remove('locked', 'locked-b');
+
+        els.r.value = ""; els.g.value = ""; els.b.value = "";
+        els.r.classList.remove('locked', 'locked-r');
+        els.g.classList.remove('locked', 'locked-g');
+        els.b.classList.remove('locked', 'locked-b');
         
         els.viewfinder.classList.remove('hidden');
         
@@ -611,7 +678,7 @@
         els.video.classList.add('hidden');
     }
 
-    function globalReset() {
+    function hardReset() {
         stopScanning();
         
         // Reset State
@@ -622,11 +689,16 @@
         state.channelIndex = 0;
         state.time = 0;
 
-        // Reset UI
+        // Reset UI (Both Screens)
         els.r.value = ""; els.g.value = ""; els.b.value = "";
         els.r.classList.remove('locked', 'locked-r');
         els.g.classList.remove('locked', 'locked-g');
         els.b.classList.remove('locked', 'locked-b');
+
+        els.rScan.value = ""; els.gScan.value = ""; els.bScan.value = "";
+        els.rScan.classList.remove('locked', 'locked-r');
+        els.gScan.classList.remove('locked', 'locked-g');
+        els.bScan.classList.remove('locked', 'locked-b');
         
         els.freeze.classList.add('hidden');
         els.video.classList.add('hidden');
@@ -636,6 +708,9 @@
         els.ctx.fillRect(0,0,512,512);
         
         document.getElementById('save-btn').classList.add('hidden');
+        
+        // Go Home
+        switchScreen('home');
     }
 
     function generateQR() {
@@ -683,7 +758,7 @@
 
     function saveQR() { 
         const a = document.createElement('a'); 
-        a.download = 'Spectrum-3D-QR.png'; 
+        a.download = 'Spectrum-QR.png'; 
         a.href = els.main.toDataURL(); 
         a.click(); 
     }
@@ -701,7 +776,7 @@
         if(!e.target.closest('#dropdown')) els.dropdown.classList.remove('show');
     };
     
-    // Input Logic
+    // Input Logic (Only for Create Screen)
     [els.r, els.g, els.b].forEach(el => el.addEventListener('input', generateQR));
     
     // Init
