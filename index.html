@@ -10,7 +10,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js');
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
         });
       }
     </script>
@@ -29,14 +29,11 @@
             --g-color: #00FF41;
             --b-color: #0088FF;
             --bg-color: #050505;
-            
-            /* Pastel CMYK for Logo */
             --c-cyan: #7DD3FC;
             --c-magenta: #F0ABFC;
             --c-yellow: #FDE047;
             --c-key: #A1A1AA;
         }
-        
         body { 
             background: var(--bg-color); 
             color: #fff; 
@@ -47,18 +44,11 @@
             flex-direction: column;
             touch-action: manipulation;
         }
-
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 2px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
-        /* Typography & Branding */
-        .logo-spectrum { 
-            font-weight: 900; 
-            letter-spacing: -0.05em; 
-        }
-        /* Applying Pastel CMYK to letters */
+        .logo-spectrum { font-weight: 900; letter-spacing: -0.05em; }
         .l-s { color: var(--c-cyan); text-shadow: 0 0 10px rgba(125, 211, 252, 0.5); }
         .l-p { color: var(--c-magenta); text-shadow: 0 0 10px rgba(240, 171, 252, 0.5); }
         .l-e { color: var(--c-yellow); text-shadow: 0 0 10px rgba(253, 224, 71, 0.5); }
@@ -67,14 +57,8 @@
         .l-r { color: var(--c-magenta); }
         .l-u { color: var(--c-yellow); }
         .l-m { color: var(--c-key); }
-        
-        .logo-rest { 
-            background: linear-gradient(90deg, #fff, #0088FF); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-        }
+        .logo-rest { background: linear-gradient(90deg, #fff, #0088FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* Inputs */
         textarea {
             background: rgba(10, 10, 10, 0.8);
             border: 2px solid rgba(255,255,255,0.1);
@@ -93,205 +77,159 @@
         textarea.locked-g { border-color: var(--g-color); box-shadow: 0 0 15px rgba(0,255,65,0.2); }
         textarea.locked-b { border-color: var(--b-color); box-shadow: 0 0 15px rgba(0,136,255,0.2); }
 
-        /* UI Elements */
         .screen { display: none; flex-direction: column; min-height: 100vh; }
         .screen.active { display: flex; }
 
-        .btn-primary {
-            position: relative;
-            overflow: hidden;
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            transition: all 0.2s;
-        }
-        .btn-create {
-            background: linear-gradient(135deg, #F97316, #EA580C);
-            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
-        }
-        .btn-scan-ui {
-            background: linear-gradient(135deg, #14B8A6, #0D9488);
-            color: #000;
-            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
-        }
-        .btn-secondary {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+        .btn-primary { position: relative; overflow: hidden; font-weight: 800; letter-spacing: 0.05em; transition: all 0.2s; }
+        .btn-create { background: linear-gradient(135deg, #F97316, #EA580C); box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3); }
+        .btn-scan-ui { background: linear-gradient(135deg, #14B8A6, #0D9488); color: #000; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
         .btn-secondary:active { background: rgba(255,255,255,0.1); }
 
-        /* Viewfinder HUD */
-        .viewfinder-corners {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 15;
-            transition: all 0.3s;
-        }
-        .corner {
-            position: absolute;
-            width: 20px; height: 20px;
-            border-color: rgba(255,255,255,0.3);
-            transition: all 0.3s;
-        }
+        .viewfinder-corners { position: absolute; inset: 0; pointer-events: none; z-index: 15; transition: all 0.3s; }
+        .corner { position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,0.3); transition: all 0.3s; }
         .tl { top: 0; left: 0; border-top: 3px solid; border-left: 3px solid; }
         .tr { top: 0; right: 0; border-top: 3px solid; border-right: 3px solid; }
         .bl { bottom: 0; left: 0; border-bottom: 3px solid; border-left: 3px solid; }
         .br { bottom: 0; right: 0; border-bottom: 3px solid; border-right: 3px solid; }
         
-        .viewfinder-hunting .corner { 
-            border-color: var(--g-color); 
-            box-shadow: 0 0 8px var(--g-color);
-            animation: pulse 1.5s infinite alternate; 
-        }
+        .viewfinder-hunting .corner { border-color: var(--g-color); box-shadow: 0 0 8px var(--g-color); animation: pulse 1.5s infinite alternate; }
         @keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* Effects */
         @keyframes flash { 0% { opacity: 0; } 20% { opacity: 0.8; } 100% { opacity: 0; } }
         .flash-anim { animation: flash 0.3s ease-out; }
         
-        .dropdown-menu { 
-            transform: translateY(-10px); opacity: 0; visibility: hidden; 
-            transition: all 0.2s ease; 
-        }
+        .dropdown-menu { transform: translateY(-10px); opacity: 0; visibility: hidden; transition: all 0.2s ease; }
         .dropdown-menu.show { transform: translateY(0); opacity: 1; visibility: visible; }
     </style>
 </head>
 <body class="p-4 pb-6">
 
-    <!-- ===================== GLOBAL ASSETS ===================== -->
     <input type="file" id="file-input" accept="image/*" class="hidden">
     
-    <!-- ===================== SCREEN: HOME ===================== -->
     <div id="screen-home" class="screen active">
         <header class="flex items-center justify-center relative z-50 h-20 mb-4">
-            <!-- Empty spacer left to balance menu -->
             <div class="w-10 h-10"></div>
-            
-            <!-- Centered Title -->
             <h1 class="text-3xl logo-spectrum flex gap-0 absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
                 <span class="l-s">S</span><span class="l-p">p</span><span class="l-e">e</span><span class="l-c">c</span><span class="l-t">t</span><span class="l-r">r</span><span class="l-u">u</span><span class="l-m">m</span>
                 <span class="logo-rest ml-2">QR</span>
             </h1>
-            
-            <!-- Menu Right -->
             <button id="menu-btn-home" class="absolute right-0 w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90">☰</button>
         </header>
 
         <main class="flex-1 flex flex-col items-center justify-center px-2 pb-10 text-center">
-            <!-- Consistent Large Font Text Block -->
-            <div class="text-base text-zinc-300 mb-10 leading-relaxed max-w-md bg-zinc-900/30 p-6 rounded-2xl border border-white/5">
-                <p class="font-bold text-white mb-4 text-lg">Генератор і сканер кольорових QR-кодів</p>
-                <p class="mb-4">
-                    Інформація кодується в каналах RGB, що дозволяє збільшити обсяг даних до 3 разів порівняно зі звичайними QR-кодами.
-                </p>
-                <p class="text-zinc-400">
-                    Такі коди не зчитуються стандартними чорно-білими сканерами.
-                </p>
+            <div class="text-base text-zinc-300 mb-6 leading-relaxed max-w-md bg-zinc-900/30 p-5 rounded-2xl border border-white/5">
+                <p data-i18n="home_title" class="font-bold text-white mb-3 text-lg">Генератор і сканер кольорових QR-кодів</p>
+                <p data-i18n="home_desc1" class="mb-3 text-sm">Інформація кодується в каналах RGB, що дозволяє збільшити обсяг данных до 3 разів порівняно зі звичайними QR-кодами.</p>
+                <p data-i18n="home_desc2" class="text-zinc-400 text-xs">⚡ Ця програма читає коди тільки з екрану або фото з галереї. 📱 Звичайні QR-сканери не бачать кольорові канали.</p>
+            </div>
+
+            <div class="w-full max-w-md text-left bg-zinc-900/50 border border-white/5 p-4 rounded-2xl mb-8 space-y-3 text-xs text-zinc-300">
+                <div class="flex items-start gap-2.5">
+                    <span class="font-bold text-orange-500">1</span>
+                    <p id="step-1">📝 <b>Створення:</b> введіть текст у червоне, зелене та синє поле (можна заповнити лише одне або два).</p>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="font-bold text-orange-500">2</span>
+                    <p id="step-2">🎨 <b>Генерація:</b> кольоровий QR-код створюється автоматично на льоту під час введення.</p>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="font-bold text-orange-500">3</span>
+                    <p id="step-3">💾 <b>Збереження:</b> натисніть «Зберегти PNG», щоб завантажити зображення.</p>
+                </div>
+                <div class="flex items-start gap-2.5">
+                    <span class="font-bold text-teal-500">4</span>
+                    <p id="step-4">📷 <b>Сканування:</b> натисніть «Сканувати» → наведіть камеру на код або оберіть фото з галереї.</p>
+                </div>
             </div>
 
             <div class="w-full max-w-xs space-y-4 mt-auto">
-                <button onclick="switchScreen('create')" class="w-full py-4 btn-primary btn-create text-white rounded-2xl text-sm uppercase">
-                    [+] Створити
-                </button>
-                <button onclick="switchScreen('scan')" class="w-full py-4 btn-primary btn-scan-ui rounded-2xl text-sm uppercase">
-                    [🔍] Сканувати
-                </button>
+                <button onclick="switchScreen('create')" data-i18n="btn_create_nav" class="w-full py-4 btn-primary btn-create text-white rounded-2xl text-sm uppercase font-bold tracking-wider">[+] Створити</button>
+                <button onclick="switchScreen('scan')" data-i18n="btn_scan_nav" class="w-full py-4 btn-primary btn-scan-ui rounded-2xl text-sm uppercase font-bold tracking-wider">[🔍] Сканувати</button>
             </div>
         </main>
         
-        <footer class="p-4 text-center">
-             <p class="text-xs text-zinc-700">© 2026 Mykhailo Kashkarov | Science Artist</p>
+        <footer class="p-2 text-center">
+             <p class="text-[10px] text-zinc-700">© 2026 Mykhailo Kashkarov | Science Artist</p>
         </footer>
     </div>
 
-    <!-- ===================== SCREEN: CREATE ===================== -->
     <div id="screen-create" class="screen">
         <header class="flex items-center p-4 border-b border-white/10 relative z-20 h-16">
             <button onclick="hardReset()" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
             <div class="flex-1 text-center">
-                <h1 class="text-xl font-black tracking-tighter logo-text">Spectrum QR</h1>
+                <h1 data-i18n="create_title" class="text-xl font-black tracking-tighter logo-text">Створення</h1>
             </div>
-            <button id="menu-btn-create" class="w-10 h-10 flex items-center justify-center text-white text-xl z-10 active:scale-90 transition-transform">☰</button>
+            <button id="menu-btn-create" class="w-10 h-10 flex items-center justify-center text-white text-xl z-10 active:scale-90">☰</button>
         </header>
 
         <div class="p-4 space-y-2 flex-shrink-0">
             <div class="relative">
                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
-                <textarea id="r-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="RED CHANNEL"></textarea>
+                <textarea id="r-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..."></textarea>
             </div>
             <div class="relative">
                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-full"></div>
-                <textarea id="g-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="GREEN CHANNEL"></textarea>
+                <textarea id="g-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..."></textarea>
             </div>
             <div class="relative">
                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-full"></div>
-                <textarea id="b-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="BLUE CHANNEL"></textarea>
+                <textarea id="b-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..."></textarea>
             </div>
         </div>
 
         <div class="flex-1 flex flex-col items-center justify-center p-4 relative">
-            <div id="container-create" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl p-4 border border-white/5 shadow-2xl overflow-hidden">
-                <!-- Canvas injected here -->
-            </div>
+            <div id="container-create" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl p-4 border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center"></div>
         </div>
 
         <div class="p-4 flex-shrink-0">
-            <button id="save-btn" onclick="saveQR()" class="w-full py-4 bg-white text-black font-bold rounded-2xl hidden active:scale-95 text-sm tracking-widest uppercase shadow-lg shadow-white/20">Зберегти PNG</button>
+            <button id="save-btn" onclick="saveQR()" data-i18n="btn_save" class="w-full py-4 bg-white text-black font-bold rounded-2xl hidden active:scale-95 text-sm tracking-widest uppercase shadow-lg">Зберегти PNG</button>
         </div>
     </div>
 
-    <!-- ===================== SCREEN: SCAN ===================== -->
     <div id="screen-scan" class="screen">
         <header class="flex items-center p-4 border-b border-white/10 relative z-20 h-16">
             <button onclick="hardReset()" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
             <div class="flex-1 text-center">
-                <h1 class="text-xl font-black tracking-tighter">Сканування</h1>
+                <h1 id="scan-title-text" data-i18n="scan_title" class="text-xl font-black tracking-tighter">Сканування</h1>
             </div>
-            <div class="w-10 h-10"></div>
+            <button id="menu-btn-scan" onclick="els.dropdown.classList.toggle('show'); event.stopPropagation();" class="w-10 h-10 flex items-center justify-center text-white text-xl z-10 active:scale-90">☰</button>
         </header>
 
-        <!-- Inputs Top (QRGB-13 Layout) -->
         <div class="p-4 space-y-2 flex-shrink-0">
             <div class="relative">
                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
-                <textarea id="r-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="RED CHANNEL" readonly></textarea>
+                <textarea id="r-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..." readonly></textarea>
             </div>
             <div class="relative">
                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-full"></div>
-                <textarea id="g-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="GREEN CHANNEL" readonly></textarea>
+                <textarea id="g-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..." readonly></textarea>
             </div>
             <div class="relative">
                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-full"></div>
-                <textarea id="b-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="BLUE CHANNEL" readonly></textarea>
+                <textarea id="b-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..." readonly></textarea>
             </div>
         </div>
 
         <div class="flex-1 flex flex-col items-center justify-center p-4 relative">
-             <div id="container-scan" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center">
-                 <!-- Video/Canvas injected here -->
-             </div>
+             <div id="container-scan" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center"></div>
         </div>
 
         <div class="p-6 space-y-4 flex-shrink-0">
-            <button onclick="startCamera()" class="w-full py-4 btn-secondary text-white font-bold rounded-2xl active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">
-                <span>📸 Камера</span>
-            </button>
-            <button onclick="document.getElementById('file-input').click()" class="w-full py-4 btn-secondary text-white font-bold rounded-2xl active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">
-                <span>🖼️ Галерея</span>
-            </button>
+            <button onclick="startCamera()" data-i18n="btn_camera" class="w-full py-4 btn-secondary text-white font-bold rounded-2xl active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">📸 Камера</button>
+            <button onclick="document.getElementById('file-input').click()" data-i18n="btn_gallery" class="w-full py-4 btn-secondary text-white font-bold rounded-2xl active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">🖼️ Галерея</button>
         </div>
     </div>
 
-    <!-- ===================== DROPDOWN MENU ===================== -->
     <div id="dropdown" class="dropdown-menu fixed top-4 right-4 w-72 bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-[100] overflow-hidden">
         <div class="flex border-b border-white/10 p-1 bg-zinc-800/50">
-            <button onclick="setLanguage('uk')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors border-r border-white/5">🇺🇦 UA</button>
-            <button onclick="setLanguage('en')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors">🇬🇧 EN</button>
+            <button onclick="setLanguage('uk')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white border-r border-white/5">🇺🇦 UA</button>
+            <button onclick="setLanguage('en')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white">🇬🇧 EN</button>
         </div>
         <div class="p-4 text-xs space-y-3">
             <div class="text-zinc-400">
-                <h3 class="font-bold text-white mb-1">⚙️ Технологія друку</h3>
-                <p class="leading-relaxed">Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. Для успішного перенесення цифрового коду на фізичний носій необхідно враховувати принципи, описані в:</p>
+                <h3 data-i18n="menu_tech_title" class="font-bold text-white mb-1">⚙️ Технологія друку</h3>
+                <p data-i18n="menu_tech_desc" class="leading-relaxed">Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. Для успішного перенесення цифрового коду на фізичний носій необхідно враховувати принципи, описні в:</p>
                 <a href="https://zenodo.org/records/19633526" target="_blank" class="text-blue-400 hover:underline block mt-1 text-[11px]">Zenodo: SCI Model</a>
             </div>
             <div class="border-t border-white/10 pt-3 space-y-2 text-zinc-400">
@@ -304,23 +242,20 @@
         </div>
     </div>
 
-    <!-- ===================== FLASH LAYER ===================== -->
     <div id="flash-layer" class="fixed inset-0 bg-white opacity-0 pointer-events-none z-[200]"></div>
 
 <script>
-    // === 1. STATE & CONFIG ===
+    // === 1. STATE & DOM ===
     const state = {
         scanning: false,
+        stream: null,
         locked: { r: false, g: false, b: false },
         results: { r: null, g: null, b: null },
-        
-        // Hybrid Logic (QRGB-13)
         activeSearch: false,
         standardFailCount: 0,
         AUTO_TRIGGER_THRESHOLD: 45,
         time: 0,
         channelIndex: 0,
-        
         config: {
             R: { k1: 0.10, k2: 0.20 },
             G: { k1: 0.18, k2: 0.33 },
@@ -328,7 +263,6 @@
         }
     };
 
-    // DOM References
     const els = {
         r: document.getElementById('r-text'), 
         g: document.getElementById('g-text'), 
@@ -336,25 +270,24 @@
         rScan: document.getElementById('r-text-scan'), 
         gScan: document.getElementById('g-text-scan'), 
         bScan: document.getElementById('b-text-scan'),
-        
         main: document.createElement('canvas'),
         video: document.createElement('video'),
         freeze: document.createElement('canvas'),
-        ctx: null,
-        fCtx: null,
+        ctx: null, fCtx: null,
         flash: document.getElementById('flash-layer'),
         viewfinder: document.createElement('div'),
         dropdown: document.getElementById('dropdown'),
+        saveBtn: document.getElementById('save-btn'),
+        scanTitle: document.getElementById('scan-title-text'),
         containers: {
             create: document.getElementById('container-create'),
             scan: document.getElementById('container-scan')
         }
     };
 
-    // Initialize Canvas & Video attributes
     els.main.width = 512; els.main.height = 512;
     els.freeze.width = 512; els.freeze.height = 512;
-    els.main.className = "w-full h-full transition-all duration-500 relative z-10";
+    els.main.className = "w-full h-full object-contain relative z-10 rounded-2xl";
     els.video.className = "absolute inset-0 w-full h-full object-cover hidden z-10";
     els.video.setAttribute('playsinline', '');
     els.freeze.className = "absolute inset-0 w-full h-full object-cover hidden z-12";
@@ -362,28 +295,77 @@
     els.ctx = els.main.getContext('2d', { willReadFrequently: true });
     els.fCtx = els.freeze.getContext('2d', { willReadFrequently: true });
 
-    // Viewfinder Corners
     els.viewfinder.className = "viewfinder-corners hidden";
     els.viewfinder.innerHTML = `<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>`;
 
     // === 2. TRANSLATIONS ===
     const translations = {
-        uk: { ph_r: "RED CHANNEL", ph_g: "GREEN CHANNEL", ph_b: "BLUE CHANNEL" },
-        en: { ph_r: "RED CHANNEL", ph_g: "GREEN CHANNEL", ph_b: "BLUE CHANNEL" }
+        uk: {
+            home_title: "Генератор і сканер кольорових QR-кодів",
+            home_desc1: "Інформація кодується в каналах RGB, що дозволяє збільшити обсяг даних до 3 разів порівняно зі звичайними QR-кодами.",
+            home_desc2: "⚡ Ця програма читає коди тільки з екрану або фото з галереї. 📱 Звичайні QR-сканери не бачать кольорові канали.",
+            step1: "📝 <b>Створення:</b> введіть текст у червоне, зелене та синє поле (можна заповнити лише одне або два).",
+            step2: "🎨 <b>Генерація:</b> кольоровий QR-код створюється автоматично на льоту під час введення.",
+            step3: "💾 <b>Збереження:</b> натисніть «Зберегти PNG», щоб завантажити зображення.",
+            step4: "📷 <b>Сканування:</b> натисніть «Сканувати» → наведіть камеру на код або оберіть фото з галереї.",
+            btn_create_nav: "[+] Створити",
+            btn_scan_nav: "[🔍] Сканувати",
+            create_title: "Створення",
+            scan_title: "Сканування",
+            scanning_status: "Сканування...",
+            scan_done: "Готово",
+            btn_camera: "📸 Камера",
+            btn_gallery: "🖼️ Галерея",
+            btn_save: "Зберегти PNG",
+            placeholder: "Введіть текст...",
+            menu_tech_title: "⚙️ Технологія друку",
+            menu_tech_desc: "Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. Для успішного перенесення цифрового коду на фізичний носій необхідно враховувати принципи, описані в:"
+        },
+        en: {
+            home_title: "Color QR Code Generator & Scanner",
+            home_desc1: "Information is encoded in RGB channels, expanding data capacity up to 3 times compared to regular QR codes.",
+            home_desc2: "⚡ This app only reads codes from screens or gallery photos. 📱 Standard QR scanners cannot detect color channels.",
+            step1: "📝 <b>Creation:</b> enter text into the red, green, and blue fields (you can fill only one or two).",
+            step2: "🎨 <b>Generation:</b> the color QR code is generated automatically on the fly as you type.",
+            step3: "💾 <b>Saving:</b> click 'Save PNG' to download the generated image.",
+            step4: "📷 <b>Scanning:</b> click 'Scan' → point the camera at the code or pick a photo from your gallery.",
+            btn_create_nav: "[+] Create",
+            btn_scan_nav: "[🔍] Scan",
+            create_title: "Creation",
+            scan_title: "Scanning",
+            scanning_status: "Scanning...",
+            scan_done: "Done",
+            btn_camera: "📸 Camera",
+            btn_gallery: "🖼️ Gallery",
+            btn_save: "Save PNG",
+            placeholder: "Enter text...",
+            menu_tech_title: "⚙️ Printing Tech",
+            menu_tech_desc: "Standard CMYK printing is not applicable as it disrupts the color channel profiles. For successful transfer of digital codes to physical assets, refer to:"
+        }
     };
     let currentLang = 'uk';
 
-    function setLanguage(l) {
-        currentLang = l;
-        const ph = translations[l];
+    function setLanguage(lang) {
+        currentLang = lang;
+        const dict = translations[lang];
         
-        els.r.placeholder = ph.ph_r;
-        els.g.placeholder = ph.ph_g;
-        els.b.placeholder = ph.ph_b;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key]) el.textContent = dict[key];
+        });
+
+        document.getElementById('step-1').innerHTML = dict.step1;
+        document.getElementById('step-2').innerHTML = dict.step2;
+        document.getElementById('step-3').innerHTML = dict.step3;
+        document.getElementById('step-4').innerHTML = dict.step4;
+
+        const placeholders = ['r', 'g', 'b', 'rScan', 'gScan', 'bScan'];
+        placeholders.forEach(id => { if (els[id]) els[id].placeholder = dict.placeholder; });
         
-        els.rScan.placeholder = ph.ph_r;
-        els.gScan.placeholder = ph.ph_g;
-        els.bScan.placeholder = ph.ph_b;
+        if (state.scanning) {
+            els.scanTitle.textContent = (state.locked.r && state.locked.g && state.locked.b) ? dict.scan_done : dict.scanning_status;
+        }
+        els.dropdown.classList.remove('show');
     }
 
     // === 3. ALGORITHMS (QRGB-13 Logic) ===
@@ -443,10 +425,8 @@
     // === 4. MAIN HYBRID LOOP ===
     function processLoop() {
         if (!state.scanning) return;
-
         let sourceCopy = null;
         
-        // Get Frame Data
         if (els.video.classList.contains('hidden') === false && els.video.readyState === els.video.HAVE_ENOUGH_DATA) {
             els.ctx.drawImage(els.video, 0, 0, 512, 512);
             sourceCopy = els.ctx.getImageData(0, 0, 512, 512);
@@ -455,17 +435,14 @@
         }
 
         if (sourceCopy) {
-            // Auto-switch to Active Search if standard fails
             if (state.standardFailCount > state.AUTO_TRIGGER_THRESHOLD && !state.activeSearch) {
                 state.activeSearch = true;
-                console.log("Engaging Active Search (SCI Oscillation)");
             }
 
             const channels = ['R', 'G', 'B'];
             const activeChannels = channels.filter(ch => !state.locked[ch.toLowerCase()]);
             
             if (activeChannels.length > 0) {
-                // Cycle through channels
                 const ch = activeChannels[state.channelIndex % activeChannels.length];
                 state.channelIndex++;
                 
@@ -474,8 +451,6 @@
 
                 if (state.activeSearch) {
                     state.time++; 
-                    
-                    // Dynamic Params
                     const gain = getOscParam(state.time, 100, 0.5, 3.5);
                     const offset = getOscParam(state.time, 250, -80, 0);
                     const cfg = { ...baseCfg, gain, offset };
@@ -485,19 +460,14 @@
                     let mono = applyBradleyStandard(workData, 0);
                     
                     const code = jsQR(mono.data, 512, 512, { inversionAttempts: "attemptBoth" });
-                    
                     if (code) {
                         lockChannel(ch, code.data);
                         foundInFrame = true;
                     }
-                    
-                    // Visual debug: show processed data
                     if (!foundInFrame) els.ctx.putImageData(workData, 0, 0);
 
                 } else {
                     state.standardFailCount++;
-                    
-                    // Standard Mode: Direct channel thresholding
                     const idx = channels.indexOf(ch);
                     let mono = applyBradleyStandard(sourceCopy, idx);
                     const code = jsQR(mono.data, 512, 512, { inversionAttempts: "attemptBoth" });
@@ -507,12 +477,10 @@
                         foundInFrame = true;
                         state.standardFailCount = 0; 
                     }
-                    
                     if (!foundInFrame) els.ctx.putImageData(sourceCopy, 0, 0);
                 }
             }
         }
-
         requestAnimationFrame(processLoop);
     }
 
@@ -527,37 +495,35 @@
         playBeep();
         flashScreen();
         
-        // Visual Feedback
         els.viewfinder.classList.add('viewfinder-hunting');
         setTimeout(() => els.viewfinder.classList.remove('viewfinder-hunting'), 300);
 
-        // Fill Inputs on SCAN screen
         const inputScan = els[key + 'Scan'];
         if (inputScan) {
             inputScan.value = data;
             inputScan.classList.add('locked', 'locked-'+key);
         }
         
-        // Also fill Inputs on CREATE screen (in background)
         const inputCreate = els[key];
         if (inputCreate) {
             inputCreate.value = data;
             inputCreate.classList.add('locked', 'locked-'+key);
         }
 
-        // Check Completion
         if (state.locked.r && state.locked.g && state.locked.b) {
-            stopScanning();
-            switchScreen('create');
-            generateQR();
+            els.scanTitle.textContent = translations[currentLang].scan_done;
+            setTimeout(() => {
+                stopScanning();
+                switchScreen('create');
+                generateQR();
+            }, 500);
         }
     }
 
     function playBeep() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
+            const o = ctx.createOscillator(); const g = ctx.createGain();
             o.connect(g); g.connect(ctx.destination);
             o.frequency.value = 880; o.type = "sine";
             g.gain.setValueAtTime(0.1, ctx.currentTime);
@@ -575,7 +541,6 @@
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('screen-' + screenName).classList.add('active');
         
-        // Move DOM assets
         const container = els.containers[screenName];
         if (container) {
             if (screenName === 'create') {
@@ -592,32 +557,31 @@
     }
 
     async function startCamera() {
-        // Clear previous results but stay on Scan screen
+        stopScanning();
         state.locked = {r:false, g:false, b:false};
         state.results = {r:null, g:null, b:null};
         state.activeSearch = false;
         state.standardFailCount = 0;
         
-        els.rScan.value = ""; els.gScan.value = ""; els.bScan.value = "";
-        els.rScan.classList.remove('locked', 'locked-r');
-        els.gScan.classList.remove('locked', 'locked-g');
-        els.bScan.classList.remove('locked', 'locked-b');
-        
-        els.r.value = ""; els.g.value = ""; els.b.value = ""; // Sync create fields
-        els.r.classList.remove('locked', 'locked-r');
-        els.g.classList.remove('locked', 'locked-g');
-        els.b.classList.remove('locked', 'locked-b');
+        const syncFields = ['rScan', 'gScan', 'bScan', 'r', 'g', 'b'];
+        syncFields.forEach(f => {
+            if(els[f]) {
+                els[f].value = "";
+                els[f].classList.remove('locked', 'locked-r', 'locked-g', 'locked-b');
+            }
+        });
 
         els.viewfinder.classList.remove('hidden');
         els.video.classList.remove('hidden');
         els.freeze.classList.add('hidden');
         els.main.classList.add('hidden');
+        els.scanTitle.textContent = translations[currentLang].scanning_status;
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: {ideal: 1280} } });
+            state.stream = stream;
             els.video.srcObject = stream; 
             els.video.play();
-
             state.scanning = true;
             requestAnimationFrame(processLoop);
         } catch(e) { alert("Camera Error: " + e); }
@@ -627,23 +591,22 @@
         const file = e.target.files[0]; 
         if (!file) return;
         
-        // Reset state
+        stopScanning();
         state.locked = {r:false, g:false, b:false};
         state.results = {r:null, g:null, b:null};
         state.activeSearch = false;
         state.standardFailCount = 0;
 
-        els.rScan.value = ""; els.gScan.value = ""; els.bScan.value = "";
-        els.rScan.classList.remove('locked', 'locked-r');
-        els.gScan.classList.remove('locked', 'locked-g');
-        els.bScan.classList.remove('locked', 'locked-b');
-
-        els.r.value = ""; els.g.value = ""; els.b.value = "";
-        els.r.classList.remove('locked', 'locked-r');
-        els.g.classList.remove('locked', 'locked-g');
-        els.b.classList.remove('locked', 'locked-b');
+        const syncFields = ['rScan', 'gScan', 'bScan', 'r', 'g', 'b'];
+        syncFields.forEach(f => {
+            if(els[f]) {
+                els[f].value = "";
+                els[f].classList.remove('locked', 'locked-r', 'locked-g', 'locked-b');
+            }
+        });
         
         els.viewfinder.classList.remove('hidden');
+        els.scanTitle.textContent = translations[currentLang].scanning_status;
         
         const reader = new FileReader();
         reader.onload = (ev) => {
@@ -661,7 +624,7 @@
                 els.main.classList.add('hidden');
 
                 state.scanning = true;
-                state.activeSearch = true; // Files usually need stronger processing
+                state.activeSearch = true; 
                 state.standardFailCount = 100; 
                 
                 requestAnimationFrame(processLoop);
@@ -673,7 +636,13 @@
 
     function stopScanning() {
         state.scanning = false;
-        if (els.video.srcObject) els.video.srcObject.getTracks().forEach(t => t.stop());
+        if (state.stream) {
+            state.stream.getTracks().forEach(track => track.stop());
+            state.stream = null;
+        }
+        if (els.video.srcObject) {
+            els.video.srcObject = null;
+        }
         els.viewfinder.classList.add('hidden');
         els.video.classList.add('hidden');
     }
@@ -681,7 +650,6 @@
     function hardReset() {
         stopScanning();
         
-        // Reset State
         state.locked = {r:false, g:false, b:false};
         state.results = {r:null, g:null, b:null};
         state.activeSearch = false;
@@ -689,84 +657,96 @@
         state.channelIndex = 0;
         state.time = 0;
 
-        // Reset UI (Both Screens)
-        els.r.value = ""; els.g.value = ""; els.b.value = "";
-        els.r.classList.remove('locked', 'locked-r');
-        els.g.classList.remove('locked', 'locked-g');
-        els.b.classList.remove('locked', 'locked-b');
-
-        els.rScan.value = ""; els.gScan.value = ""; els.bScan.value = "";
-        els.rScan.classList.remove('locked', 'locked-r');
-        els.gScan.classList.remove('locked', 'locked-g');
-        els.bScan.classList.remove('locked', 'locked-b');
+        const syncFields = ['r', 'g', 'b', 'rScan', 'gScan', 'bScan'];
+        syncFields.forEach(f => {
+            if(els[f]) {
+                els[f].value = "";
+                els[f].classList.remove('locked', 'locked-r', 'locked-g', 'locked-b');
+            }
+        });
         
         els.freeze.classList.add('hidden');
         els.video.classList.add('hidden');
         
-        // Clear Canvas
         els.ctx.fillStyle = "#000";
         els.ctx.fillRect(0,0,512,512);
         
-        document.getElementById('save-btn').classList.add('hidden');
+        els.saveBtn.classList.add('hidden');
+        els.scanTitle.textContent = translations[currentLang].scan_title;
         
-        // Go Home
         switchScreen('home');
     }
 
     function generateQR() {
         const texts = [els.r.value, els.g.value, els.b.value];
         
-        // Clear
         els.ctx.fillStyle = "#000"; 
         els.ctx.fillRect(0,0,512,512);
 
         if (!texts.some(t => t.trim())) {
-            els.main.style.opacity = 0.1;
-            document.getElementById('save-btn').classList.add('hidden');
+            els.saveBtn.classList.add('hidden');
             return;
         }
-        els.main.style.opacity = 1;
-        els.main.classList.remove('hidden');
+        els.saveBtn.classList.remove('hidden');
         
-        // Calculate Max Version (Sync logic)
         let maxVer = 1;
         texts.forEach(t => {
             if(!t.trim()) return;
-            const tmp = qrcode(0, 'M'); 
-            tmp.addData(unescape(encodeURIComponent(t))); tmp.make();
-            const v = Math.floor((tmp.getModuleCount() - 17) / 4);
-            if (v > maxVer) maxVer = v;
+            try {
+                const tmp = qrcode(0, 'M'); 
+                tmp.addData(unescape(encodeURIComponent(t))); tmp.make();
+                const v = Math.floor((tmp.getModuleCount() - 17) / 4);
+                if (v > maxVer) maxVer = v;
+            } catch(e){}
         });
         
+        const matrices = texts.map(t => {
+            if (!t.trim()) return null;
+            try {
+                const qr = qrcode(maxVer, 'M');
+                qr.addData(unescape(encodeURIComponent(t)));
+                qr.make();
+                return qr;
+            } catch(e) { return null; }
+        });
+
+        const qrObj = matrices.find(m => m !== null);
+        if (!qrObj) return;
+
+        const count = qrObj.getModuleCount();
+        const cellSize = Math.floor(512 / count);
+        const margin = Math.floor((512 - (cellSize * count)) / 2);
+
+        els.ctx.globalCompositeOperation = "source-over";
+        els.ctx.fillStyle = "#000";
+        els.ctx.fillRect(0,0,512,512);
+
         els.ctx.globalCompositeOperation = "lighten";
         
-        texts.forEach((text, i) => {
-            if(!text.trim()) return;
-            const qr = qrcode(maxVer, 'M'); 
-            qr.addData(unescape(encodeURIComponent(text))); qr.make();
-            const mod = 512 / qr.getModuleCount();
-            els.ctx.fillStyle = i === 0 ? "#FF0000" : (i === 1 ? "#00FF00" : "#0000FF");
-            for (let r = 0; r < qr.getModuleCount(); r++) {
-                for (let c = 0; c < qr.getModuleCount(); c++) {
-                    if (qr.isDark(r, c)) els.ctx.fillRect(c * mod, r * mod, mod, mod);
+        matrices.forEach((qr, i) => {
+            if(!qr) return;
+            els.ctx.fillStyle = i === 0 ? "rgb(255,0,0)" : (i === 1 ? "rgb(0,255,0)" : "rgb(0,0,255)");
+            for (let r = 0; r < count; r++) {
+                for (let c = 0; c < count; c++) {
+                    if (qr.isDark(r, c)) {
+                        els.ctx.fillRect(margin + c * cellSize, margin + r * cellSize, cellSize, cellSize);
+                    }
                 }
             }
         });
         els.ctx.globalCompositeOperation = "source-over";
-        document.getElementById('save-btn').classList.remove('hidden');
     }
 
     function saveQR() { 
         const a = document.createElement('a'); 
-        a.download = 'Spectrum-QR.png'; 
-        a.href = els.main.toDataURL(); 
+        a.download = `SpectrumQR_${Date.now()}.png`; 
+        a.href = els.main.toDataURL('image/png'); 
         a.click(); 
     }
 
     // === 6. EVENT LISTENERS ===
     document.getElementById('file-input').addEventListener('change', handleFile);
     
-    // Menu Logic
     const menuBtns = [document.getElementById('menu-btn-home'), document.getElementById('menu-btn-create')];
     menuBtns.forEach(btn => {
         if(btn) btn.onclick = (e) => { e.stopPropagation(); els.dropdown.classList.toggle('show'); };
@@ -776,13 +756,11 @@
         if(!e.target.closest('#dropdown')) els.dropdown.classList.remove('show');
     };
     
-    // Input Logic (Only for Create Screen)
     [els.r, els.g, els.b].forEach(el => el.addEventListener('input', generateQR));
     
-    // Init
-    setLanguage('uk');
-    generateQR();
-
+    window.addEventListener('DOMContentLoaded', () => {
+        setLanguage('uk');
+    });
 </script>
 </body>
 </html>
