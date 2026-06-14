@@ -10,13 +10,13 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js');
+          navigator.serviceWorker.register('./sw.js').catch(console.log);
         });
       }
     </script>
     
-    <title>Spectrum QR | SCI Encoder</title>
-    <meta name="description" content="Spectral Channel Indexing QR Encoder/Decoder">
+    <title>Spectrum QR | Кольоровий QR-код</title>
+    <meta name="description" content="Генератор та сканер кольорових QR-кодів з підтримкою RGB каналів">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
@@ -29,8 +29,6 @@
             --g-color: #00FF41;
             --b-color: #0088FF;
             --bg-color: #050505;
-            
-            /* Pastel CMYK for Logo */
             --c-cyan: #7DD3FC;
             --c-magenta: #F0ABFC;
             --c-yellow: #FDE047;
@@ -48,17 +46,11 @@
             touch-action: manipulation;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 2px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
-        /* Typography & Branding */
-        .logo-spectrum { 
-            font-weight: 900; 
-            letter-spacing: -0.05em; 
-        }
-        /* Applying Pastel CMYK to letters */
+        .logo-spectrum { font-weight: 900; letter-spacing: -0.05em; }
         .l-s { color: var(--c-cyan); text-shadow: 0 0 10px rgba(125, 211, 252, 0.5); }
         .l-p { color: var(--c-magenta); text-shadow: 0 0 10px rgba(240, 171, 252, 0.5); }
         .l-e { color: var(--c-yellow); text-shadow: 0 0 10px rgba(253, 224, 71, 0.5); }
@@ -74,7 +66,6 @@
             -webkit-text-fill-color: transparent; 
         }
 
-        /* Inputs */
         textarea {
             background: rgba(10, 10, 10, 0.8);
             border: 2px solid rgba(255,255,255,0.1);
@@ -82,6 +73,7 @@
             font-family: 'Inter', sans-serif;
             resize: none;
             transition: all 0.3s;
+            font-size: 14px;
         }
         textarea:focus { 
             outline: none; 
@@ -93,7 +85,6 @@
         textarea.locked-g { border-color: var(--g-color); box-shadow: 0 0 15px rgba(0,255,65,0.2); }
         textarea.locked-b { border-color: var(--b-color); box-shadow: 0 0 15px rgba(0,136,255,0.2); }
 
-        /* UI Elements */
         .screen { display: none; flex-direction: column; min-height: 100vh; }
         .screen.active { display: flex; }
 
@@ -119,7 +110,16 @@
         }
         .btn-secondary:active { background: rgba(255,255,255,0.1); }
 
-        /* Viewfinder HUD */
+        .instruction-step {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 12px;
+            transition: all 0.2s;
+        }
+        .instruction-step:hover {
+            background: rgba(255,255,255,0.07);
+        }
+
         .viewfinder-corners {
             position: absolute;
             inset: 0;
@@ -145,7 +145,6 @@
         }
         @keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* Effects */
         @keyframes flash { 0% { opacity: 0; } 20% { opacity: 0.8; } 100% { opacity: 0; } }
         .flash-anim { animation: flash 0.3s ease-out; }
         
@@ -158,144 +157,176 @@
 </head>
 <body class="p-4 pb-6">
 
-    <!-- ===================== GLOBAL ASSETS ===================== -->
     <input type="file" id="file-input" accept="image/*" class="hidden">
     
-    <!-- ===================== SCREEN: HOME ===================== -->
+    <!-- ===================== ГОЛОВНИЙ ЕКРАН ===================== -->
     <div id="screen-home" class="screen active">
-        <header class="flex items-center justify-center relative z-50 h-20 mb-4">
-            <!-- Empty spacer left to balance menu -->
+        <header class="flex items-center justify-center relative z-50 h-20 mb-2">
             <div class="w-10 h-10"></div>
-            
-            <!-- Centered Title -->
             <h1 class="text-3xl logo-spectrum flex gap-0 absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
                 <span class="l-s">S</span><span class="l-p">p</span><span class="l-e">e</span><span class="l-c">c</span><span class="l-t">t</span><span class="l-r">r</span><span class="l-u">u</span><span class="l-m">m</span>
                 <span class="logo-rest ml-2">QR</span>
             </h1>
-            
-            <!-- Menu Right -->
             <button id="menu-btn-home" class="absolute right-0 w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90">☰</button>
         </header>
 
-        <main class="flex-1 flex flex-col items-center justify-center px-2 pb-10 text-center">
-            <!-- Consistent Large Font Text Block -->
-            <div class="text-base text-zinc-300 mb-10 leading-relaxed max-w-md bg-zinc-900/30 p-6 rounded-2xl border border-white/5">
-                <p class="font-bold text-white mb-4 text-lg">Генератор і сканер кольорових QR-кодів</p>
-                <p class="mb-4">
-                    Інформація кодується в каналах RGB, що дозволяє збільшити обсяг даних до 3 разів порівняно зі звичайними QR-кодами.
-                </p>
-                <p class="text-zinc-400">
-                    Такі коди не зчитуються стандартними чорно-білими сканерами.
-                </p>
+        <main class="flex-1 flex flex-col px-2 pb-6">
+            <!-- Головний опис -->
+            <div class="text-center mb-5">
+                <div class="bg-zinc-900/30 p-5 rounded-2xl border border-white/5">
+                    <p class="font-bold text-white text-lg mb-3">🌈 Генератор і сканер кольорових QR-кодів</p>
+                    <p class="text-zinc-300 text-sm leading-relaxed mb-3">
+                        Інформація кодується в каналах RGB — це дозволяє зберігати <span class="text-white font-bold">до 3 разів більше даних</span>, ніж у звичайному QR-коді.
+                    </p>
+                    <p class="text-zinc-400 text-xs leading-relaxed bg-black/30 p-3 rounded-xl">
+                        ⚡ Ця програма читає коди тільки з екрану або фото з галереї.<br>
+                        📱 Звичайні QR-сканери не бачать кольорові канали.
+                    </p>
+                </div>
             </div>
 
-            <div class="w-full max-w-xs space-y-4 mt-auto">
-                <button onclick="switchScreen('create')" class="w-full py-4 btn-primary btn-create text-white rounded-2xl text-sm uppercase">
-                    [+] Створити
+            <!-- ІНСТРУКЦІЯ -->
+            <div class="mb-6">
+                <p class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>📖 ЯК КОРИСТУВАТИСЯ</span>
+                </p>
+                <div class="space-y-2">
+                    <div class="instruction-step flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 font-bold text-sm shrink-0">1</div>
+                        <div class="text-sm text-zinc-300">📝 <span class="text-white">Створення:</span> введіть текст у червоне, зелене та синє поле (можна заповнити один, два або всі три канали)</div>
+                    </div>
+                    <div class="instruction-step flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 font-bold text-sm shrink-0">2</div>
+                        <div class="text-sm text-zinc-300">🎨 <span class="text-white">Генерація:</span> QR-код створюється автоматично під час введення тексту</div>
+                    </div>
+                    <div class="instruction-step flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 font-bold text-sm shrink-0">3</div>
+                        <div class="text-sm text-zinc-300">💾 <span class="text-white">Збереження:</span> натисніть «Зберегти PNG», щоб завантажити зображення</div>
+                    </div>
+                    <div class="instruction-step flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 font-bold text-sm shrink-0">4</div>
+                        <div class="text-sm text-zinc-300">📷 <span class="text-white">Сканування:</span> натисніть «Сканувати» → наведіть камеру на код або оберіть фото з галереї</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- КНОПКИ -->
+            <div class="w-full space-y-3 mt-auto pt-4">
+                <button onclick="switchScreen('create')" class="w-full py-4 btn-primary btn-create text-white rounded-2xl text-sm uppercase tracking-wider font-black">
+                    [+] СТВОРИТИ
                 </button>
-                <button onclick="switchScreen('scan')" class="w-full py-4 btn-primary btn-scan-ui rounded-2xl text-sm uppercase">
-                    [🔍] Сканувати
+                <button onclick="switchScreen('scan')" class="w-full py-4 btn-primary btn-scan-ui rounded-2xl text-sm uppercase tracking-wider font-black">
+                    [🔍] СКАНУВАТИ
                 </button>
             </div>
         </main>
         
         <footer class="p-4 text-center">
-             <p class="text-xs text-zinc-700">© 2026 Mykhailo Kashkarov | Science Artist</p>
+            <p class="text-xs text-zinc-700">© 2026 Mykhailo Kashkarov | Science Artist</p>
         </footer>
     </div>
 
-    <!-- ===================== SCREEN: CREATE ===================== -->
+    <!-- ===================== ЕКРАН СТВОРЕННЯ ===================== -->
     <div id="screen-create" class="screen">
         <header class="flex items-center p-4 border-b border-white/10 relative z-20 h-16">
             <button onclick="hardReset()" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
             <div class="flex-1 text-center">
-                <h1 class="text-xl font-black tracking-tighter logo-text">Spectrum QR</h1>
+                <h1 class="text-xl font-black tracking-tighter text-white">Створення QR</h1>
             </div>
-            <button id="menu-btn-create" class="w-10 h-10 flex items-center justify-center text-white text-xl z-10 active:scale-90 transition-transform">☰</button>
+            <button id="menu-btn-create" class="w-10 h-10 flex items-center justify-center text-white text-xl z-10 active:scale-90">☰</button>
         </header>
 
-        <div class="p-4 space-y-2 flex-shrink-0">
+        <div class="p-4 space-y-3 flex-shrink-0">
             <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
-                <textarea id="r-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="RED CHANNEL"></textarea>
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500 rounded-full"></div>
+                <textarea id="r-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm" placeholder="Введіть текст..."></textarea>
             </div>
             <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-full"></div>
-                <textarea id="g-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="GREEN CHANNEL"></textarea>
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-500 rounded-full"></div>
+                <textarea id="g-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm" placeholder="Введіть текст..."></textarea>
             </div>
             <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-full"></div>
-                <textarea id="b-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="BLUE CHANNEL"></textarea>
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-full"></div>
+                <textarea id="b-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm" placeholder="Введіть текст..."></textarea>
             </div>
         </div>
 
         <div class="flex-1 flex flex-col items-center justify-center p-4 relative">
             <div id="container-create" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl p-4 border border-white/5 shadow-2xl overflow-hidden">
-                <!-- Canvas injected here -->
+                <canvas id="qr-canvas" width="512" height="512" class="w-full h-full"></canvas>
             </div>
+            <p class="text-xs text-zinc-500 mt-3 text-center">🔴🟢🔵 Кольори накладаються автоматично</p>
         </div>
 
         <div class="p-4 flex-shrink-0">
-            <button id="save-btn" onclick="saveQR()" class="w-full py-4 bg-white text-black font-bold rounded-2xl hidden active:scale-95 text-sm tracking-widest uppercase shadow-lg shadow-white/20">Зберегти PNG</button>
+            <button id="save-btn" onclick="saveQR()" class="w-full py-4 bg-white text-black font-bold rounded-2xl hidden active:scale-95 text-sm tracking-widest uppercase shadow-lg shadow-white/20">💾 Зберегти PNG</button>
         </div>
     </div>
 
-    <!-- ===================== SCREEN: SCAN ===================== -->
+    <!-- ===================== ЕКРАН СКАНУВАННЯ ===================== -->
     <div id="screen-scan" class="screen">
         <header class="flex items-center p-4 border-b border-white/10 relative z-20 h-16">
             <button onclick="hardReset()" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
             <div class="flex-1 text-center">
-                <h1 class="text-xl font-black tracking-tighter">Сканування</h1>
+                <h1 class="text-xl font-black tracking-tighter text-white">Сканування</h1>
             </div>
             <div class="w-10 h-10"></div>
         </header>
 
-        <!-- Inputs Top (QRGB-13 Layout) -->
-        <div class="p-4 space-y-2 flex-shrink-0">
+        <div class="p-4 space-y-3 flex-shrink-0">
             <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
-                <textarea id="r-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="RED CHANNEL" readonly></textarea>
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500 rounded-full"></div>
+                <textarea id="r-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm" placeholder="Текст з червоного каналу" readonly></textarea>
             </div>
             <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-full"></div>
-                <textarea id="g-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="GREEN CHANNEL" readonly></textarea>
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-500 rounded-full"></div>
+                <textarea id="g-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm" placeholder="Текст з зеленого каналу" readonly></textarea>
             </div>
             <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-full"></div>
-                <textarea id="b-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="BLUE CHANNEL" readonly></textarea>
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-full"></div>
+                <textarea id="b-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm" placeholder="Текст з синього каналу" readonly></textarea>
             </div>
         </div>
 
         <div class="flex-1 flex flex-col items-center justify-center p-4 relative">
-             <div id="container-scan" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center">
-                 <!-- Video/Canvas injected here -->
-             </div>
+            <div id="container-scan" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center">
+                <video id="scan-video" class="absolute inset-0 w-full h-full object-cover hidden" playsinline></video>
+                <canvas id="freeze-canvas" class="absolute inset-0 w-full h-full object-cover hidden"></canvas>
+                <canvas id="scan-canvas" width="512" height="512" class="hidden"></canvas>
+                <div id="viewfinder-corners" class="viewfinder-corners hidden">
+                    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+                </div>
+            </div>
+            <p id="scan-status" class="text-xs text-zinc-500 mt-3 text-center">📷 Натисніть "Камера" або "Галерея"</p>
         </div>
 
         <div class="p-6 space-y-4 flex-shrink-0">
             <button onclick="startCamera()" class="w-full py-4 btn-secondary text-white font-bold rounded-2xl active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">
-                <span>📸 Камера</span>
+                📸 Камера
             </button>
             <button onclick="document.getElementById('file-input').click()" class="w-full py-4 btn-secondary text-white font-bold rounded-2xl active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">
-                <span>🖼️ Галерея</span>
+                🖼️ Галерея
             </button>
         </div>
     </div>
 
-    <!-- ===================== DROPDOWN MENU ===================== -->
-    <div id="dropdown" class="dropdown-menu fixed top-4 right-4 w-72 bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-[100] overflow-hidden">
+    <!-- ===================== МЕНЮ ===================== -->
+    <div id="dropdown" class="dropdown-menu fixed top-4 right-4 w-80 bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-[100] overflow-hidden">
         <div class="flex border-b border-white/10 p-1 bg-zinc-800/50">
-            <button onclick="setLanguage('uk')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors border-r border-white/5">🇺🇦 UA</button>
-            <button onclick="setLanguage('en')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white transition-colors">🇬🇧 EN</button>
+            <button onclick="setLanguage('uk')" class="flex-1 py-2 text-xs font-bold text-zinc-400 hover:text-white transition-colors border-r border-white/5">🇺🇦 УКРАЇНСЬКА</button>
+            <button onclick="setLanguage('en')" class="flex-1 py-2 text-xs font-bold text-zinc-400 hover:text-white transition-colors">🇬🇧 ENGLISH</button>
         </div>
         <div class="p-4 text-xs space-y-3">
             <div class="text-zinc-400">
-                <h3 class="font-bold text-white mb-1">⚙️ Технологія друку</h3>
-                <p class="leading-relaxed">Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. Для успішного перенесення цифрового коду на фізичний носій необхідно враховувати принципи, описані в:</p>
-                <a href="https://zenodo.org/records/19633526" target="_blank" class="text-blue-400 hover:underline block mt-1 text-[11px]">Zenodo: SCI Model</a>
+                <h3 class="font-bold text-white mb-2">⚙️ Про друк на папері</h3>
+                <p class="leading-relaxed text-xs">
+                    Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. 
+                    Для перенесення коду на фізичний носій дивіться:
+                </p>
+                <a href="https://zenodo.org/records/19633526" target="_blank" class="text-blue-400 hover:underline block mt-2 text-[11px] break-all">📄 Zenodo: SCI Model</a>
             </div>
             <div class="border-t border-white/10 pt-3 space-y-2 text-zinc-400">
-                <div class="font-bold text-white">Mykhailo Kashkarov</div>
+                <div class="font-bold text-white text-sm">Mykhailo Kashkarov</div>
                 <div>📧 <a href="mailto:colqrnament@gmail.com" class="hover:text-white">colqrnament@gmail.com</a></div>
                 <div>📞 <a href="tel:+380635058292" class="hover:text-white">063 505 82 92</a></div>
                 <div>💻 <a href="https://github.com/Astra31415926" target="_blank" class="hover:text-white text-[11px] block truncate">github.com/Astra31415926</a></div>
@@ -304,23 +335,19 @@
         </div>
     </div>
 
-    <!-- ===================== FLASH LAYER ===================== -->
     <div id="flash-layer" class="fixed inset-0 bg-white opacity-0 pointer-events-none z-[200]"></div>
 
 <script>
-    // === 1. STATE & CONFIG ===
+    // === СТАН ТА КОНФІГУРАЦІЯ ===
     const state = {
         scanning: false,
         locked: { r: false, g: false, b: false },
         results: { r: null, g: null, b: null },
-        
-        // Hybrid Logic (QRGB-13)
         activeSearch: false,
         standardFailCount: 0,
         AUTO_TRIGGER_THRESHOLD: 45,
         time: 0,
         channelIndex: 0,
-        
         config: {
             R: { k1: 0.10, k2: 0.20 },
             G: { k1: 0.18, k2: 0.33 },
@@ -328,7 +355,7 @@
         }
     };
 
-    // DOM References
+    // === DOM ЕЛЕМЕНТИ ===
     const els = {
         r: document.getElementById('r-text'), 
         g: document.getElementById('g-text'), 
@@ -336,57 +363,104 @@
         rScan: document.getElementById('r-text-scan'), 
         gScan: document.getElementById('g-text-scan'), 
         bScan: document.getElementById('b-text-scan'),
-        
-        main: document.createElement('canvas'),
-        video: document.createElement('video'),
-        freeze: document.createElement('canvas'),
-        ctx: null,
-        fCtx: null,
+        canvas: document.getElementById('qr-canvas'),
+        video: document.getElementById('scan-video'),
+        freeze: document.getElementById('freeze-canvas'),
+        scanCanvas: document.getElementById('scan-canvas'),
         flash: document.getElementById('flash-layer'),
-        viewfinder: document.createElement('div'),
+        viewfinder: document.getElementById('viewfinder-corners'),
         dropdown: document.getElementById('dropdown'),
         containers: {
             create: document.getElementById('container-create'),
             scan: document.getElementById('container-scan')
-        }
+        },
+        scanStatus: document.getElementById('scan-status')
     };
+    els.ctx = els.canvas.getContext('2d');
+    els.fCtx = els.freeze.getContext('2d');
+    els.scanCtx = els.scanCanvas.getContext('2d');
 
-    // Initialize Canvas & Video attributes
-    els.main.width = 512; els.main.height = 512;
+    els.canvas.width = 512; els.canvas.height = 512;
+    els.scanCanvas.width = 512; els.scanCanvas.height = 512;
     els.freeze.width = 512; els.freeze.height = 512;
-    els.main.className = "w-full h-full transition-all duration-500 relative z-10";
-    els.video.className = "absolute inset-0 w-full h-full object-cover hidden z-10";
-    els.video.setAttribute('playsinline', '');
-    els.freeze.className = "absolute inset-0 w-full h-full object-cover hidden z-12";
-    
-    els.ctx = els.main.getContext('2d', { willReadFrequently: true });
-    els.fCtx = els.freeze.getContext('2d', { willReadFrequently: true });
 
-    // Viewfinder Corners
-    els.viewfinder.className = "viewfinder-corners hidden";
-    els.viewfinder.innerHTML = `<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>`;
-
-    // === 2. TRANSLATIONS ===
+    // === ПЕРЕКЛАДИ (ПОВНА ВЕРСІЯ) ===
     const translations = {
-        uk: { ph_r: "RED CHANNEL", ph_g: "GREEN CHANNEL", ph_b: "BLUE CHANNEL" },
-        en: { ph_r: "RED CHANNEL", ph_g: "GREEN CHANNEL", ph_b: "BLUE CHANNEL" }
+        uk: {
+            placeholder: "Введіть текст...",
+            scanPlaceholder: "Текст з {color} каналу",
+            createTitle: "Створення QR",
+            scanTitle: "Сканування",
+            saveBtn: "💾 Зберегти PNG",
+            cameraBtn: "📸 Камера",
+            galleryBtn: "🖼️ Галерея",
+            statusReady: "📷 Натисніть 'Камера' або 'Галерея'",
+            statusScanning: "🔍 Сканування...",
+            statusComplete: "✅ Усі канали розпізнано!",
+            menuPrintTitle: "⚙️ Про друк на папері",
+            menuPrintText: "Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. Для перенесення коду на фізичний носій дивіться:",
+            menuSciLink: "📄 Zenodo: SCI Model"
+        },
+        en: {
+            placeholder: "Enter text...",
+            scanPlaceholder: "Text from {color} channel",
+            createTitle: "Create QR",
+            scanTitle: "Scan",
+            saveBtn: "💾 Save PNG",
+            cameraBtn: "📸 Camera",
+            galleryBtn: "🖼️ Gallery",
+            statusReady: "📷 Press 'Camera' or 'Gallery'",
+            statusScanning: "🔍 Scanning...",
+            statusComplete: "✅ All channels recognized!",
+            menuPrintTitle: "⚙️ About paper printing",
+            menuPrintText: "Standard CMYK printing is not suitable as it disrupts the color channel structure. For transferring the code to a physical medium, see:",
+            menuSciLink: "📄 Zenodo: SCI Model"
+        }
     };
     let currentLang = 'uk';
 
-    function setLanguage(l) {
-        currentLang = l;
-        const ph = translations[l];
+    function setLanguage(lang) {
+        currentLang = lang;
+        const t = translations[lang];
         
-        els.r.placeholder = ph.ph_r;
-        els.g.placeholder = ph.ph_g;
-        els.b.placeholder = ph.ph_b;
+        // Оновлюємо плейсхолдери для полів вводу
+        const placeholders = [els.r, els.g, els.b, els.rScan, els.gScan, els.bScan];
+        placeholders.forEach(el => {
+            if (el === els.rScan || el === els.gScan || el === els.bScan) {
+                let color = el === els.rScan ? "червоного" : (el === els.gScan ? "зеленого" : "синього");
+                if (lang === 'en') color = el === els.rScan ? "red" : (el === els.gScan ? "green" : "blue");
+                el.placeholder = t.scanPlaceholder.replace("{color}", color);
+            } else {
+                el.placeholder = t.placeholder;
+            }
+        });
         
-        els.rScan.placeholder = ph.ph_r;
-        els.gScan.placeholder = ph.ph_g;
-        els.bScan.placeholder = ph.ph_b;
+        // Заголовки
+        document.querySelector('#screen-create h1').textContent = t.createTitle;
+        document.querySelector('#screen-scan h1').textContent = t.scanTitle;
+        
+        // Кнопки
+        const saveBtn = document.getElementById('save-btn');
+        if (saveBtn) saveBtn.innerHTML = t.saveBtn;
+        
+        const cameraBtn = document.querySelector('#screen-scan .btn-secondary:first-child span');
+        const galleryBtn = document.querySelector('#screen-scan .btn-secondary:last-child span');
+        if (cameraBtn) cameraBtn.textContent = t.cameraBtn;
+        if (galleryBtn) galleryBtn.textContent = t.galleryBtn;
+        
+        // Статус
+        if (els.scanStatus && !state.scanning) els.scanStatus.textContent = t.statusReady;
+        
+        // Меню
+        const menuPrintTitle = document.querySelector('#dropdown h3');
+        const menuPrintText = document.querySelector('#dropdown .text-zinc-400 p');
+        const menuSciLink = document.querySelector('#dropdown .text-zinc-400 a');
+        if (menuPrintTitle) menuPrintTitle.textContent = t.menuPrintTitle;
+        if (menuPrintText) menuPrintText.textContent = t.menuPrintText;
+        if (menuSciLink) menuSciLink.textContent = t.menuSciLink;
     }
 
-    // === 3. ALGORITHMS (QRGB-13 Logic) ===
+    // === АЛГОРИТМИ ===
     function applyBradleyStandard(imgData, chIdx) {
         const w = imgData.width, h = imgData.height;
         const input = imgData.data;
@@ -422,11 +496,9 @@
         for (let i = 0; i < d.length; i += 4) {
             let r = d[i], g = d[i+1], b = d[i+2];
             let target, n1, n2;
-            
             if (ch === 'R') { target = r; n1 = g; n2 = b; }
             else if (ch === 'G') { target = g; n1 = r; n2 = b; }
             else { target = b; n1 = r; n2 = g; }
-
             let res = (target - (n1 * cfg.k1 + n2 * cfg.k2)) * cfg.gain + cfg.offset;
             res = Math.max(0, Math.min(255, res));
             d[i] = res; d[i+1] = res; d[i+2] = res; d[i+3] = 255;
@@ -440,129 +512,16 @@
         return min + pos * (max - min);
     }
 
-    // === 4. MAIN HYBRID LOOP ===
-    function processLoop() {
-        if (!state.scanning) return;
-
-        let sourceCopy = null;
-        
-        // Get Frame Data
-        if (els.video.classList.contains('hidden') === false && els.video.readyState === els.video.HAVE_ENOUGH_DATA) {
-            els.ctx.drawImage(els.video, 0, 0, 512, 512);
-            sourceCopy = els.ctx.getImageData(0, 0, 512, 512);
-        } else if (els.freeze.classList.contains('hidden') === false) {
-            sourceCopy = els.fCtx.getImageData(0, 0, 512, 512);
-        }
-
-        if (sourceCopy) {
-            // Auto-switch to Active Search if standard fails
-            if (state.standardFailCount > state.AUTO_TRIGGER_THRESHOLD && !state.activeSearch) {
-                state.activeSearch = true;
-                console.log("Engaging Active Search (SCI Oscillation)");
-            }
-
-            const channels = ['R', 'G', 'B'];
-            const activeChannels = channels.filter(ch => !state.locked[ch.toLowerCase()]);
-            
-            if (activeChannels.length > 0) {
-                // Cycle through channels
-                const ch = activeChannels[state.channelIndex % activeChannels.length];
-                state.channelIndex++;
-                
-                const baseCfg = state.config[ch];
-                let foundInFrame = false;
-
-                if (state.activeSearch) {
-                    state.time++; 
-                    
-                    // Dynamic Params
-                    const gain = getOscParam(state.time, 100, 0.5, 3.5);
-                    const offset = getOscParam(state.time, 250, -80, 0);
-                    const cfg = { ...baseCfg, gain, offset };
-
-                    let workData = new ImageData(new Uint8ClampedArray(sourceCopy.data), 512, 512);
-                    applySCIMath(workData, ch, cfg);
-                    let mono = applyBradleyStandard(workData, 0);
-                    
-                    const code = jsQR(mono.data, 512, 512, { inversionAttempts: "attemptBoth" });
-                    
-                    if (code) {
-                        lockChannel(ch, code.data);
-                        foundInFrame = true;
-                    }
-                    
-                    // Visual debug: show processed data
-                    if (!foundInFrame) els.ctx.putImageData(workData, 0, 0);
-
-                } else {
-                    state.standardFailCount++;
-                    
-                    // Standard Mode: Direct channel thresholding
-                    const idx = channels.indexOf(ch);
-                    let mono = applyBradleyStandard(sourceCopy, idx);
-                    const code = jsQR(mono.data, 512, 512, { inversionAttempts: "attemptBoth" });
-                    
-                    if (code) {
-                        lockChannel(ch, code.data);
-                        foundInFrame = true;
-                        state.standardFailCount = 0; 
-                    }
-                    
-                    if (!foundInFrame) els.ctx.putImageData(sourceCopy, 0, 0);
-                }
-            }
-        }
-
-        requestAnimationFrame(processLoop);
-    }
-
-    // === 5. UI & ACTIONS ===
-    function lockChannel(ch, data) {
-        const key = ch.toLowerCase();
-        if (state.locked[key]) return;
-        
-        state.locked[key] = true;
-        state.results[key] = data;
-        
-        playBeep();
-        flashScreen();
-        
-        // Visual Feedback
-        els.viewfinder.classList.add('viewfinder-hunting');
-        setTimeout(() => els.viewfinder.classList.remove('viewfinder-hunting'), 300);
-
-        // Fill Inputs on SCAN screen
-        const inputScan = els[key + 'Scan'];
-        if (inputScan) {
-            inputScan.value = data;
-            inputScan.classList.add('locked', 'locked-'+key);
-        }
-        
-        // Also fill Inputs on CREATE screen (in background)
-        const inputCreate = els[key];
-        if (inputCreate) {
-            inputCreate.value = data;
-            inputCreate.classList.add('locked', 'locked-'+key);
-        }
-
-        // Check Completion
-        if (state.locked.r && state.locked.g && state.locked.b) {
-            stopScanning();
-            switchScreen('create');
-            generateQR();
-        }
-    }
-
     function playBeep() {
         try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            o.connect(g); g.connect(ctx.destination);
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
             o.frequency.value = 880; o.type = "sine";
-            g.gain.setValueAtTime(0.1, ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.15);
-            o.start(); o.stop(ctx.currentTime + 0.15);
+            g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
+            o.start(); o.stop(audioCtx.currentTime + 0.15);
         } catch(e){}
     }
 
@@ -571,218 +530,51 @@
         setTimeout(() => els.flash.classList.remove('flash-anim'), 400);
     }
 
-    function switchScreen(screenName) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('screen-' + screenName).classList.add('active');
+    function lockChannel(ch, data) {
+        const key = ch.toLowerCase();
+        if (state.locked[key]) return;
+        state.locked[key] = true;
+        state.results[key] = data;
+        playBeep();
+        flashScreen();
         
-        // Move DOM assets
-        const container = els.containers[screenName];
-        if (container) {
-            if (screenName === 'create') {
-                container.appendChild(els.main);
-                els.main.classList.remove('hidden');
-                els.main.style.opacity = '1';
-            } else if (screenName === 'scan') {
-                container.appendChild(els.video);
-                container.appendChild(els.freeze);
-                container.appendChild(els.main);
-                container.appendChild(els.viewfinder);
-            }
+        els.viewfinder.classList.add('viewfinder-hunting');
+        setTimeout(() => els.viewfinder.classList.remove('viewfinder-hunting'), 300);
+
+        const inputScan = els[key + 'Scan'];
+        if (inputScan) {
+            inputScan.value = data;
+            inputScan.classList.add('locked', 'locked-'+key);
+        }
+        
+        const inputCreate = els[key];
+        if (inputCreate) {
+            inputCreate.value = data;
+            inputCreate.classList.add('locked', 'locked-'+key);
+        }
+
+        if (state.locked.r && state.locked.g && state.locked.b) {
+            if (els.scanStatus) els.scanStatus.textContent = translations[currentLang].statusComplete;
+            stopScanning();
+            switchScreen('create');
+            generateQR();
         }
     }
 
-    async function startCamera() {
-        // Clear previous results but stay on Scan screen
-        state.locked = {r:false, g:false, b:false};
-        state.results = {r:null, g:null, b:null};
-        state.activeSearch = false;
-        state.standardFailCount = 0;
-        
-        els.rScan.value = ""; els.gScan.value = ""; els.bScan.value = "";
-        els.rScan.classList.remove('locked', 'locked-r');
-        els.gScan.classList.remove('locked', 'locked-g');
-        els.bScan.classList.remove('locked', 'locked-b');
-        
-        els.r.value = ""; els.g.value = ""; els.b.value = ""; // Sync create fields
-        els.r.classList.remove('locked', 'locked-r');
-        els.g.classList.remove('locked', 'locked-g');
-        els.b.classList.remove('locked', 'locked-b');
-
-        els.viewfinder.classList.remove('hidden');
-        els.video.classList.remove('hidden');
-        els.freeze.classList.add('hidden');
-        els.main.classList.add('hidden');
-
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: {ideal: 1280} } });
-            els.video.srcObject = stream; 
-            els.video.play();
-
-            state.scanning = true;
-            requestAnimationFrame(processLoop);
-        } catch(e) { alert("Camera Error: " + e); }
-    }
-
-    function handleFile(e) {
-        const file = e.target.files[0]; 
-        if (!file) return;
-        
-        // Reset state
-        state.locked = {r:false, g:false, b:false};
-        state.results = {r:null, g:null, b:null};
-        state.activeSearch = false;
-        state.standardFailCount = 0;
-
-        els.rScan.value = ""; els.gScan.value = ""; els.bScan.value = "";
-        els.rScan.classList.remove('locked', 'locked-r');
-        els.gScan.classList.remove('locked', 'locked-g');
-        els.bScan.classList.remove('locked', 'locked-b');
-
-        els.r.value = ""; els.g.value = ""; els.b.value = "";
-        els.r.classList.remove('locked', 'locked-r');
-        els.g.classList.remove('locked', 'locked-g');
-        els.b.classList.remove('locked', 'locked-b');
-        
-        els.viewfinder.classList.remove('hidden');
-        
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => {
-                const s = 512;
-                els.freeze.width = s; els.freeze.height = s;
-                const ctx = els.fCtx;
-                
-                const min = Math.min(img.width, img.height);
-                ctx.drawImage(img, (img.width-min)/2, (img.height-min)/2, min, min, 0, 0, s, s);
-                
-                els.freeze.classList.remove('hidden');
-                els.video.classList.add('hidden');
-                els.main.classList.add('hidden');
-
-                state.scanning = true;
-                state.activeSearch = true; // Files usually need stronger processing
-                state.standardFailCount = 100; 
-                
-                requestAnimationFrame(processLoop);
-            };
-            img.src = ev.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function stopScanning() {
-        state.scanning = false;
-        if (els.video.srcObject) els.video.srcObject.getTracks().forEach(t => t.stop());
-        els.viewfinder.classList.add('hidden');
-        els.video.classList.add('hidden');
-    }
-
-    function hardReset() {
-        stopScanning();
-        
-        // Reset State
-        state.locked = {r:false, g:false, b:false};
-        state.results = {r:null, g:null, b:null};
-        state.activeSearch = false;
-        state.standardFailCount = 0;
-        state.channelIndex = 0;
-        state.time = 0;
-
-        // Reset UI (Both Screens)
-        els.r.value = ""; els.g.value = ""; els.b.value = "";
-        els.r.classList.remove('locked', 'locked-r');
-        els.g.classList.remove('locked', 'locked-g');
-        els.b.classList.remove('locked', 'locked-b');
-
-        els.rScan.value = ""; els.gScan.value = ""; els.bScan.value = "";
-        els.rScan.classList.remove('locked', 'locked-r');
-        els.gScan.classList.remove('locked', 'locked-g');
-        els.bScan.classList.remove('locked', 'locked-b');
-        
-        els.freeze.classList.add('hidden');
-        els.video.classList.add('hidden');
-        
-        // Clear Canvas
-        els.ctx.fillStyle = "#000";
-        els.ctx.fillRect(0,0,512,512);
-        
-        document.getElementById('save-btn').classList.add('hidden');
-        
-        // Go Home
-        switchScreen('home');
-    }
-
-    function generateQR() {
-        const texts = [els.r.value, els.g.value, els.b.value];
-        
-        // Clear
-        els.ctx.fillStyle = "#000"; 
-        els.ctx.fillRect(0,0,512,512);
-
-        if (!texts.some(t => t.trim())) {
-            els.main.style.opacity = 0.1;
-            document.getElementById('save-btn').classList.add('hidden');
-            return;
+    function processLoop() {
+        if (!state.scanning) return;
+        if (els.scanStatus && !(state.locked.r && state.locked.g && state.locked.b)) {
+            els.scanStatus.textContent = translations[currentLang].statusScanning;
         }
-        els.main.style.opacity = 1;
-        els.main.classList.remove('hidden');
         
-        // Calculate Max Version (Sync logic)
-        let maxVer = 1;
-        texts.forEach(t => {
-            if(!t.trim()) return;
-            const tmp = qrcode(0, 'M'); 
-            tmp.addData(unescape(encodeURIComponent(t))); tmp.make();
-            const v = Math.floor((tmp.getModuleCount() - 17) / 4);
-            if (v > maxVer) maxVer = v;
-        });
+        let sourceCopy = null;
         
-        els.ctx.globalCompositeOperation = "lighten";
-        
-        texts.forEach((text, i) => {
-            if(!text.trim()) return;
-            const qr = qrcode(maxVer, 'M'); 
-            qr.addData(unescape(encodeURIComponent(text))); qr.make();
-            const mod = 512 / qr.getModuleCount();
-            els.ctx.fillStyle = i === 0 ? "#FF0000" : (i === 1 ? "#00FF00" : "#0000FF");
-            for (let r = 0; r < qr.getModuleCount(); r++) {
-                for (let c = 0; c < qr.getModuleCount(); c++) {
-                    if (qr.isDark(r, c)) els.ctx.fillRect(c * mod, r * mod, mod, mod);
-                }
-            }
-        });
-        els.ctx.globalCompositeOperation = "source-over";
-        document.getElementById('save-btn').classList.remove('hidden');
-    }
+        if (!els.video.classList.contains('hidden') && els.video.readyState === els.video.HAVE_ENOUGH_DATA) {
+            els.scanCtx.drawImage(els.video, 0, 0, 512, 512);
+            sourceCopy = els.scanCtx.getImageData(0, 0, 512, 512);
+        } else if (!els.freeze.classList.contains('hidden')) {
+            sourceCopy = els.fCtx.getImageData(0, 0, 512, 512);
+        }
 
-    function saveQR() { 
-        const a = document.createElement('a'); 
-        a.download = 'Spectrum-QR.png'; 
-        a.href = els.main.toDataURL(); 
-        a.click(); 
-    }
-
-    // === 6. EVENT LISTENERS ===
-    document.getElementById('file-input').addEventListener('change', handleFile);
-    
-    // Menu Logic
-    const menuBtns = [document.getElementById('menu-btn-home'), document.getElementById('menu-btn-create')];
-    menuBtns.forEach(btn => {
-        if(btn) btn.onclick = (e) => { e.stopPropagation(); els.dropdown.classList.toggle('show'); };
-    });
-    
-    document.onclick = (e) => {
-        if(!e.target.closest('#dropdown')) els.dropdown.classList.remove('show');
-    };
-    
-    // Input Logic (Only for Create Screen)
-    [els.r, els.g, els.b].forEach(el => el.addEventListener('input', generateQR));
-    
-    // Init
-    setLanguage('uk');
-    generateQR();
-
-</script>
-</body>
-</html>
+        if (sourceCopy) {
+            if
