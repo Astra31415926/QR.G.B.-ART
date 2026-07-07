@@ -1,5 +1,11 @@
+![Preview](QRGB_PRO%20540х540.png)
+
 # QR.G.B.-ART
 A prototype of an artistic QR code generator featuring Generative Art elements, spectral normalization, and multi-layer encoding support.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+![Status: Science--Art](https://img.shields.io/badge/Status-Science--Art-brightgreen)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18895764.svg)](https://zenodo.org/records/18895764)
 
 ## 🌟 Concept
 The project focuses on the Spectral/Color Code technique, based on research in spectral normalization for physical printing and light-sensitive art.
