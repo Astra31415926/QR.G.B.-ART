@@ -35,10 +35,10 @@ The project is available online: **[Live Demo](https://astra31415926.github.io/Q
 
 ## 👤 Author / Researcher
 **Mykhailo Kashkarov** — Science-Art researcher, creator of the spectral channel integrity model.
-* **YouTube:** Michael-RGB-ART
-* **Instagram:** @mixailkashkarov
-* **Medium:** @Bakminsterfuler
-* **Profile:** [Zenodo Profile](https://zenodo.org/records/19633526)
+* **YouTube:** [Michael-RGB-ART](https://www.youtube.com/@Michael-RGB-ART)
+* **Instagram:** [@mixailkashkarov](https://www.instagram.com/mixailkashkarov)
+* **Medium:** [@Bakminsterfuler](https://medium.com/@Bakminsterfuler)
+* **Profile:** [Zenodo Profile](https://zenodo.org/records/19633526)ds/19633526)
 
 ---
 © 2026 QR.G.B.-ART | Spectral Channel Integrity Model. Designed to synchronize digital code with physical painting.
