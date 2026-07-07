@@ -31,7 +31,7 @@
 * **Lab-Color Space:** Розрахунок колірного контрасту ΔE для автоматичної верифікації зчитування.
 
 ## 🚀 Швидкий старт
-Проєкт доступний онлайн: [https://astra31415926.github.io/QRGB-Spectral-Encoding/](https://astra31415926.github.io/QRGB-Spectral-Encoding/)
+Проєкт доступний онлайн:[ [https://astra31415926.github.io/QRGB-Spectral-Encoding/]([https://astra31415926.github.io/QRGB-Spectral-Encoding/](https://astra31415926.github.io/QR.G.B.-ART/))](https://astra31415926.github.io/QR.G.B.-ART/)
 
 1. Введіть дані в поля **R**, **G** або **B**.
 2. Експортуйте стилізований код у PNG для друку або цифрового використання.
