@@ -1,51 +1,38 @@
-# QR.G.B.-ART 🎨🔬
+# QR.G.B.-ART
+A prototype of an artistic QR code generator featuring Generative Art elements, spectral normalization, and multi-layer encoding support.
 
-![Preview](QRGB_PRO%20540х540.png)
+## 🌟 Concept
+The project focuses on the Spectral/Color Code technique, based on research in spectral normalization for physical printing and light-sensitive art.
 
-**QR.G.B.-ART** — прототип генератора художніх QR-кодів з елементами Generative Art, спектральною нормалізацією та підтримкою багатошарового кодування.
+**Key Features:**
+* **Artistic QR:** Custom palettes and gradients (violet-black accents) resistant to visual noise.
+* **Multi-Layer Encoding:** Packs independent data into three color channels (R, G, B) based on the spectral channel integrity model.
+* **Visual Feedback:** Tools for testing code readability under varying spectral lighting conditions.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
-![Status: Science--Art](https://img.shields.io/badge/Status-Science--Art-brightgreen)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18895764.svg)](https://zenodo.org/records/18895764)
-[![Behance](https://img.shields.io/badge/Behance-Case--Study-blue)](https://www.behance.net/gallery/247424185)
+## 📖 Scientific Base
+The project implements the Spectral Channel Integrity model:
+* **Spectral Channel Integrity Universal Model DOI:** [10.5281/zenodo.18895764](https://doi.org/10.5281/zenodo.18895764)
 
-## 🌟 Концепція
-Проєкт орієнтований на техніку **Spectral/Color Code**, засновану на дослідженнях Михайла Кашкарова зі спектральної нормалізації для фізичного друку та світлочутливого мистецтва (Light-sensitive Art). 
+The system analyzes pigment reflectivity and synchronizes channel brightness levels, enabling physical surfaces (oil on canvas) to serve as stable data carriers.
 
-### Ключові функції:
-* **Artistic QR:** Створення кодів із кастомними палітрами та градієнтами (фіолетово-чорні акценти), стійких до візуального шуму.
-* **Multi-Layer Encoding:** Упаковка незалежних даних у три колірні канали (R, G, B) на базі моделі **цілісності спектральних каналів**.
-* **Visual Feedback:** Інструментарій для тестування зчитування кодів під різним спектральним освітленням.
+## 🛠 Technical Stack
+* **Canvas API:** Dynamic layer rendering with `lighten` blending mode.
+* **Bradley Thresholding:** Adaptive binarization algorithm for stable scanning of textured surfaces.
+* **Lab Color Space:** $\Delta E$ color contrast calculation for automated readability verification.
 
-## 📖 Наукова база
-Проєкт реалізує модель **Spectral Channel Integrity (цілісність спектральних каналів)**:
+## 🚀 Quick Start
+The project is available online: **[Live Demo](https://astra31415926.github.io/QR.G.B.-ART/)**
 
-> **Spectral Channel Integrity Universal Model**
-> DOI: [10.5281/zenodo.18895764](https://doi.org/10.5281/zenodo.18895764)
+1. Input data into the R, G, or B fields.
+2. Export the stylized code as a PNG for print or digital use.
+3. Use the built-in scanner to decode layers via a smartphone camera.
 
-Система аналізує відбивну здатність пігментів і синхронізує рівні яскравості каналів, що дозволяє використовувати фізичні поверхні (полотно, олія) як стабільні носії даних.
-
-## 🛠 Технічний стек
-* **Canvas API:** Динамічне малювання шарів із накладенням `lighten`.
-* **Bradley Thresholding:** Алгоритм адаптивної бінаризації для стабільного сканування текстурованих поверхонь.
-* **Lab-Color Space:** Розрахунок колірного контрасту ΔE для автоматичної верифікації зчитування.
-
-## 🚀 Швидкий старт
-Проєкт доступний онлайн:[ [https://astra31415926.github.io/QRGB-Spectral-Encoding/]([https://astra31415926.github.io/QRGB-Spectral-Encoding/](https://astra31415926.github.io/QR.G.B.-ART/))](https://astra31415926.github.io/QR.G.B.-ART/)
-
-1. Введіть дані в поля **R**, **G** або **B**.
-2. Експортуйте стилізований код у PNG для друку або цифрового використання.
-3. Використовуйте вбудований сканер для дешифрування шарів через камеру смартфона.
-
-## 👤 Автор / Researcher
-**Михайло Кашкаров (Mykhailo Kashkarov)**
-Science-Art дослідник, творець моделі цілісності спектральних каналів.
-
-
-* [YouTube: Michael-RGB-ART](https://www.youtube.com/@Michael-RGB-ART)
-* [Instagram: @mixailkashkarov](https://www.instagram.com/mixailkashkarov/)
-* [Medium: @Bakminsterfuler](https://medium.com/@Bakminsterfuler)
-* [[Zenodo Profile](https://zenodo.org/records/18895764)](https://zenodo.org/records/19633526)
+## 👤 Author / Researcher
+**Mykhailo Kashkarov** — Science-Art researcher, creator of the spectral channel integrity model.
+* **YouTube:** Michael-RGB-ART
+* **Instagram:** @mixailkashkarov
+* **Medium:** @Bakminsterfuler
+* **Profile:** [Zenodo Profile](https://zenodo.org/records/19633526)
 
 ---
-© 2026 QR.G.B.-ART | Модель цілісності спектральних каналів. Розроблено для синхронізації цифрового коду та фізичного живопису.
+© 2026 QR.G.B.-ART | Spectral Channel Integrity Model. Designed to synchronize digital code with physical painting.
