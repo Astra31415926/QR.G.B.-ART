@@ -41,11 +41,11 @@
 **Михайло Кашкаров (Mykhailo Kashkarov)**
 Science-Art дослідник, творець моделі цілісності спектральних каналів.
 
-* 📱 **[Behance: Case Study & Presentation](https://www.behance.net/gallery/247424185)**
+
 * [YouTube: Michael-RGB-ART](https://www.youtube.com/@Michael-RGB-ART)
 * [Instagram: @mixailkashkarov](https://www.instagram.com/mixailkashkarov/)
 * [Medium: @Bakminsterfuler](https://medium.com/@Bakminsterfuler)
-* [Zenodo Profile](https://zenodo.org/records/18895764)
+* [[Zenodo Profile](https://zenodo.org/records/18895764)](https://zenodo.org/records/19633526)
 
 ---
 © 2026 QR.G.B.-ART | Модель цілісності спектральних каналів. Розроблено для синхронізації цифрового коду та фізичного живопису.
