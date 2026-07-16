@@ -1,766 +1,703 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#050505">
-    <link rel="apple-touch-icon" href="./icon-192.png">
-    <link rel="icon" type="image/png" href="./icon-192.png">
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js').catch(() => {});
-        });
-      }
-    </script>
-    
-    <title>Spectrum QR | SCI Encoder</title>
-    <meta name="description" content="Spectral Channel Indexing QR Encoder/Decoder">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --r-color: #FF004D;
-            --g-color: #00FF41;
-            --b-color: #0088FF;
-            --bg-color: #050505;
-            --c-cyan: #7DD3FC;
-            --c-magenta: #F0ABFC;
-            --c-yellow: #FDE047;
-            --c-key: #A1A1AA;
-        }
-        body { 
-            background: var(--bg-color); 
-            color: #fff; 
-            font-family: 'Inter', system-ui, sans-serif; 
-            overflow-x: hidden;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            touch-action: manipulation;
-        }
-        ::-webkit-scrollbar { width: 2px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-
-        .logo-spectrum { font-weight: 900; letter-spacing: -0.05em; }
-        .l-s { color: var(--c-cyan); text-shadow: 0 0 10px rgba(125, 211, 252, 0.5); }
-        .l-p { color: var(--c-magenta); text-shadow: 0 0 10px rgba(240, 171, 252, 0.5); }
-        .l-e { color: var(--c-yellow); text-shadow: 0 0 10px rgba(253, 224, 71, 0.5); }
-        .l-c { color: var(--c-key); text-shadow: 0 0 10px rgba(161, 161, 170, 0.5); }
-        .l-t { color: var(--c-cyan); }
-        .l-r { color: var(--c-magenta); }
-        .l-u { color: var(--c-yellow); }
-        .l-m { color: var(--c-key); }
-        .logo-rest { background: linear-gradient(90deg, #fff, #0088FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        textarea {
-            background: rgba(10, 10, 10, 0.8);
-            border: 2px solid rgba(255,255,255,0.1);
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            resize: none;
-            transition: all 0.3s;
-        }
-        textarea:focus { 
-            outline: none; 
-            border-color: rgba(255,255,255,0.3);
-            background: rgba(20, 20, 20, 0.9);
-        }
-        textarea.locked { font-weight: 600; }
-        textarea.locked-r { border-color: var(--r-color); box-shadow: 0 0 15px rgba(255,0,77,0.2); }
-        textarea.locked-g { border-color: var(--g-color); box-shadow: 0 0 15px rgba(0,255,65,0.2); }
-        textarea.locked-b { border-color: var(--b-color); box-shadow: 0 0 15px rgba(0,136,255,0.2); }
-
-        .screen { display: none; flex-direction: column; min-height: 100vh; }
-        .screen.active { display: flex; }
-
-        .btn-primary { position: relative; overflow: hidden; font-weight: 800; letter-spacing: 0.05em; transition: all 0.2s; }
-        .btn-create { background: linear-gradient(135deg, #F97316, #EA580C); box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3); }
-        .btn-scan-ui { background: linear-gradient(135deg, #14B8A6, #0D9488); color: #000; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3); }
-        .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-        .btn-secondary:active { background: rgba(255,255,255,0.1); }
-
-        .viewfinder-corners { position: absolute; inset: 0; pointer-events: none; z-index: 15; transition: all 0.3s; }
-        .corner { position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,0.3); transition: all 0.3s; }
-        .tl { top: 0; left: 0; border-top: 3px solid; border-left: 3px solid; }
-        .tr { top: 0; right: 0; border-top: 3px solid; border-right: 3px solid; }
-        .bl { bottom: 0; left: 0; border-bottom: 3px solid; border-left: 3px solid; }
-        .br { bottom: 0; right: 0; border-bottom: 3px solid; border-right: 3px solid; }
-        
-        .viewfinder-hunting .corner { border-color: var(--g-color); box-shadow: 0 0 8px var(--g-color); animation: pulse 1.5s infinite alternate; }
-        @keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        @keyframes flash { 0% { opacity: 0; } 20% { opacity: 0.8; } 100% { opacity: 0; } }
-        .flash-anim { animation: flash 0.3s ease-out; }
-        
-        .dropdown-menu { transform: translateY(-10px); opacity: 0; visibility: hidden; transition: all 0.2s ease; }
-        .dropdown-menu.show { transform: translateY(0); opacity: 1; visibility: visible; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#050505">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+<title>Spectrum QR | SCI Encoder</title>
+<meta name="description" content="Spectral Channel Indexing QR Encoder/Decoder">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --r-color: #FF004D;
+  --g-color: #00FF41;
+  --b-color: #0088FF;
+  --bg-color: #050505;
+  --c-cyan: #7DD3FC;
+  --c-magenta: #F0ABFC;
+  --c-yellow: #FDE047;
+  --c-key: #A1A1AA;
+}
+body {
+  background: var(--bg-color);
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh; /* dvh учитывает реально видимую область на мобильных, а не потенциальный максимум */
+  display: flex;
+  flex-direction: column;
+  touch-action: manipulation;
+}
+::-webkit-scrollbar { width: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+.logo-spectrum { font-weight: 900; letter-spacing: -0.05em; }
+.l-s { color: var(--c-cyan); text-shadow: 0 0 10px rgba(125, 211, 252, 0.5); }
+.l-p { color: var(--c-magenta); text-shadow: 0 0 10px rgba(240, 171, 252, 0.5); }
+.l-e { color: var(--c-yellow); text-shadow: 0 0 10px rgba(253, 224, 71, 0.5); }
+.l-c { color: var(--c-key); text-shadow: 0 0 10px rgba(161, 161, 170, 0.5); }
+.l-t { color: var(--c-cyan); }
+.l-r { color: var(--c-magenta); }
+.l-u { color: var(--c-yellow); }
+.l-m { color: var(--c-key); }
+.logo-rest { background: linear-gradient(90deg, #fff, #0088FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+textarea {
+  background: rgba(10, 10, 10, 0.8);
+  border: 2px solid rgba(255,255,255,0.1);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  resize: none;
+  transition: all 0.3s;
+}
+textarea:focus {
+  outline: none;
+  border-color: rgba(255,255,255,0.3);
+  background: rgba(20, 20, 20, 0.9);
+}
+textarea.locked { font-weight: 600; }
+textarea.locked-r { border-color: var(--r-color); box-shadow: 0 0 15px rgba(255,0,77,0.2); }
+textarea.locked-g { border-color: var(--g-color); box-shadow: 0 0 15px rgba(0,255,65,0.2); }
+textarea.locked-b { border-color: var(--b-color); box-shadow: 0 0 15px rgba(0,136,255,0.2); }
+.screen {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh; /* та же причина: реальная видимая высота, а не потенциальный максимум */
+}
+.screen.active { display: flex; }
+.btn-primary { position: relative; overflow: hidden; font-weight: 800; letter-spacing: 0.05em; transition: all 0.2s; }
+.btn-create { background: linear-gradient(135deg, #F97316, #EA580C); box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3); }
+.btn-scan-ui { background: linear-gradient(135deg, #14B8A6, #0D9488); color: #000; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3); }
+.btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+.btn-secondary:active { background: rgba(255,255,255,0.1); }
+.viewfinder-corners { position: absolute; inset: 0; pointer-events: none; z-index: 15; transition: all 0.3s; }
+.corner { position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,0.3); transition: all 0.3s; }
+.tl { top: 0; left: 0; border-top: 3px solid; border-left: 3px solid; }
+.tr { top: 0; right: 0; border-top: 3px solid; border-right: 3px solid; }
+.bl { bottom: 0; left: 0; border-bottom: 3px solid; border-left: 3px solid; }
+.br { bottom: 0; right: 0; border-bottom: 3px solid; border-right: 3px solid; }
+.viewfinder-hunting .corner { border-color: var(--g-color); box-shadow: 0 0 8px var(--g-color); animation: pulse 1.5s infinite alternate; }
+@keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+@keyframes flash { 0% { opacity: 0; } 20% { opacity: 0.8; } 100% { opacity: 0; } }
+.flash-anim { animation: flash 0.3s ease-out; }
+.dropdown-menu { transform: translateY(-10px); opacity: 0; visibility: hidden; transition: all 0.2s ease; }
+.dropdown-menu.show { transform: translateY(0); opacity: 1; visibility: visible; }
+</style>
 </head>
 <body class="p-4 pb-6">
+<input type="file" id="file-input" accept="image/*" class="hidden">
 
-    <input type="file" id="file-input" accept="image/*" class="hidden">
-    
-    <div id="screen-home" class="screen active">
-        <header class="flex items-center justify-center relative z-50 h-20 mb-4">
-            <div class="w-10 h-10"></div>
-            <h1 class="text-3xl logo-spectrum flex gap-0 absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                <span class="l-s">S</span><span class="l-p">p</span><span class="l-e">e</span><span class="l-c">c</span><span class="l-t">t</span><span class="l-r">r</span><span class="l-u">u</span><span class="l-m">m</span>
-                <span class="logo-rest ml-2">QR</span>
-            </h1>
-            <button id="menu-btn-home" class="absolute right-0 w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90">☰</button>
-        </header>
+<div id="screen-home" class="screen active">
+  <header class="flex items-center justify-center relative z-50 h-20 mb-4">
+    <div class="w-10 h-10"></div>
+    <h1 class="text-3xl logo-spectrum flex gap-0 absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+      <span class="l-s">S</span><span class="l-p">p</span><span class="l-e">e</span><span class="l-c">c</span><span class="l-t">t</span><span class="l-r">r</span><span class="l-u">u</span><span class="l-m">m</span>
+      <span class="logo-rest ml-2">QR</span>
+    </h1>
+    <button id="menu-btn-home" class="absolute right-0 w-10 h-10 flex items-center justify-center text-white text-xl active:scale-90">☰</button>
+  </header>
 
-        <main class="flex-1 flex flex-col items-center justify-center px-2 pb-10 text-center">
-            <div class="text-base text-zinc-300 mb-6 leading-relaxed max-w-md bg-zinc-900/30 p-5 rounded-2xl border border-white/5">
-                <p data-i18n="home_title" class="font-bold text-white mb-3 text-lg">Генератор і сканер кольорових QR-кодів</p>
-                <p data-i18n="home_desc1" class="mb-3 text-sm">Інформація кодується в каналах RGB, що дозволяє збільшити обсяг данных до 3 разів порівняно зі звичайними QR-кодами.</p>
-                <p data-i18n="home_desc2" class="text-zinc-400 text-xs">⚡ Ця програма читає коди тільки з екрану або фото з галереї. 📱 Звичайні QR-сканери не бачать кольорові канали.</p>
-            </div>
+  <!-- Главный экран сокращён до заголовка + ссылки «как это работает» — подробное описание
+       и шаги перенесены в меню (☰), чтобы кнопки были видны сразу, без скролла -->
+  <main class="flex-1 flex flex-col items-center justify-center px-4 pb-10 text-center">
+    <p data-i18n="home_title" class="font-bold text-white mb-3 text-lg max-w-xs leading-snug">Генератор і сканер кольорових QR-кодів</p>
+    <button onclick="els.dropdown.classList.toggle('show'); event.stopPropagation();" class="text-xs text-zinc-500 hover:text-zinc-300 underline underline-offset-4 mb-10 transition-colors">
+      ⓘ <span data-i18n="learn_more">Як це працює</span>
+    </button>
 
-            <div class="w-full max-w-md text-left bg-zinc-900/50 border border-white/5 p-4 rounded-2xl mb-8 space-y-3 text-xs text-zinc-300">
-                <div class="flex items-start gap-2.5">
-                    <span class="font-bold text-orange-500">1</span>
-                    <p id="step-1">📝 <b>Створення:</b> введіть текст у червоне, зелене та синє поле (можна заповнити лише одне або два).</p>
-                </div>
-                <div class="flex items-start gap-2.5">
-                    <span class="font-bold text-orange-500">2</span>
-                    <p id="step-2">🎨 <b>Генерація:</b> кольоровий QR-код створюється автоматично на льоту під час введення.</p>
-                </div>
-                <div class="flex items-start gap-2.5">
-                    <span class="font-bold text-orange-500">3</span>
-                    <p id="step-3">💾 <b>Збереження:</b> натисніть «Зберегти PNG», щоб завантажити зображення.</p>
-                </div>
-                <div class="flex items-start gap-2.5">
-                    <span class="font-bold text-teal-500">4</span>
-                    <p id="step-4">📷 <b>Сканування:</b> натисніть «Сканувати» → наведіть камеру на код або оберіть фото з галереї.</p>
-                </div>
-            </div>
+    <div class="w-full max-w-xs space-y-4">
+      <button onclick="switchScreen('create')" data-i18n="btn_create_nav" class="w-full py-4 btn-primary btn-create text-white rounded-2xl text-sm uppercase font-bold tracking-wider">[+] Створити</button>
+      <button onclick="switchScreen('scan')" data-i18n="btn_scan_nav" class="w-full py-4 btn-primary btn-scan-ui rounded-2xl text-sm uppercase font-bold tracking-wider">[🔍] Сканувати</button>
+    </div>
+  </main>
 
-            <div class="w-full max-w-xs space-y-4 mt-auto">
-                <button onclick="switchScreen('create')" data-i18n="btn_create_nav" class="w-full py-4 btn-primary btn-create text-white rounded-2xl text-sm uppercase font-bold tracking-wider">[+] Створити</button>
-                <button onclick="switchScreen('scan')" data-i18n="btn_scan_nav" class="w-full py-4 btn-primary btn-scan-ui rounded-2xl text-sm uppercase font-bold tracking-wider">[🔍] Сканувати</button>
-            </div>
-        </main>
-        
-        <footer class="p-2 text-center">
-             <p class="text-[10px] text-zinc-700">© 2026 Mykhailo Kashkarov | Science Artist</p>
-        </footer>
+  <footer class="p-2 text-center">
+    <p class="text-[10px] text-zinc-700">© 2026 Mykhailo Kashkarov | Science Artist</p>
+  </footer>
+</div>
+
+<div id="screen-create" class="screen">
+  <header class="flex items-center p-4 border-b border-white/10 relative z-20 h-16">
+    <button onclick="hardReset()" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
+    <div class="flex-1 text-center">
+      <h1 data-i18n="create_title" class="text-xl font-black tracking-tighter logo-text">Створення</h1>
+    </div>
+    <button id="menu-btn-create" class="w-10 h-10 flex items-center justify-center text-white text-xl z-10 active:scale-90">☰</button>
+  </header>
+
+  <div class="p-4 space-y-2 flex-shrink-0">
+    <div class="relative">
+      <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
+      <textarea id="r-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..."></textarea>
+    </div>
+    <div class="relative">
+      <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-full"></div>
+      <textarea id="g-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..."></textarea>
+    </div>
+    <div class="relative">
+      <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-full"></div>
+      <textarea id="b-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..."></textarea>
+    </div>
+  </div>
+
+  <div class="flex-1 flex flex-col items-center justify-center p-4 relative">
+    <!-- max-height (dvh) в дополнение к max-w-xs — превью не тянет кнопку за край экрана на невысоких экранах -->
+    <div id="container-create" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl p-4 border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center" style="max-height: 40dvh;"></div>
+  </div>
+
+  <div class="p-4 flex-shrink-0">
+    <button id="save-btn" onclick="saveQR()" data-i18n="btn_save" class="w-full py-4 bg-white text-black font-bold rounded-2xl hidden active:scale-95 text-sm tracking-widest uppercase shadow-lg">Зберегти PNG</button>
+  </div>
+</div>
+
+<div id="screen-scan" class="screen">
+  <header class="flex items-center p-4 border-b border-white/10 relative z-20 h-16">
+    <button onclick="hardReset()" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
+    <div class="flex-1 text-center">
+      <h1 id="scan-title-text" data-i18n="scan_title" class="text-xl font-black tracking-tighter">Сканування</h1>
+    </div>
+    <button id="menu-btn-scan" onclick="els.dropdown.classList.toggle('show'); event.stopPropagation();" class="w-10 h-10 flex items-center justify-center text-white text-xl z-10 active:scale-90">☰</button>
+  </header>
+
+  <div class="p-4 space-y-2 flex-shrink-0">
+    <div class="relative">
+      <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
+      <textarea id="r-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..." readonly></textarea>
+    </div>
+    <div class="relative">
+      <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-full"></div>
+      <textarea id="g-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..." readonly></textarea>
+    </div>
+    <div class="relative">
+      <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-full"></div>
+      <textarea id="b-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..." readonly></textarea>
+    </div>
+  </div>
+
+  <div class="flex-1 flex flex-col items-center justify-center p-4 relative">
+    <div id="container-scan" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center" style="max-height: 40dvh;"></div>
+  </div>
+
+  <div class="p-6 space-y-4 flex-shrink-0">
+    <button onclick="startCamera()" data-i18n="btn_camera" class="w-full py-4 btn-secondary text-white font-bold rounded-2xl active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">📸 Камера</button>
+    <button onclick="document.getElementById('file-input').click()" data-i18n="btn_gallery" class="w-full py-4 btn-secondary text-white font-bold rounded-2xl active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">🖼️ Галерея</button>
+  </div>
+</div>
+
+<!-- Меню теперь также содержит описание и шаги, перенесённые с главного экрана.
+     max-h + overflow-y-auto — на случай, если контента в сумме окажется больше высоты экрана. -->
+<div id="dropdown" class="dropdown-menu fixed top-4 right-4 w-72 max-h-[85dvh] bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-[100] overflow-y-auto">
+  <div class="flex border-b border-white/10 p-1 bg-zinc-800/50 sticky top-0 bg-zinc-900/95 backdrop-blur-xl">
+    <button onclick="setLanguage('uk')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white border-r border-white/5">🇺🇦 UA</button>
+    <button onclick="setLanguage('en')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white">🇬🇧 EN</button>
+  </div>
+  <div class="p-4 text-xs space-y-3">
+
+    <div class="text-zinc-400 space-y-2">
+      <p data-i18n="home_desc1" class="leading-relaxed">Інформація кодується в каналах RGB, що дозволяє збільшити обсяг даних до 3 разів порівняно зі звичайними QR-кодами.</p>
+      <p data-i18n="home_desc2" class="leading-relaxed text-zinc-500">⚡ Ця програма читає коди тільки з екрану або фото з галереї. 📱 Звичайні QR-сканери не бачать кольорові канали.</p>
     </div>
 
-    <div id="screen-create" class="screen">
-        <header class="flex items-center p-4 border-b border-white/10 relative z-20 h-16">
-            <button onclick="hardReset()" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
-            <div class="flex-1 text-center">
-                <h1 data-i18n="create_title" class="text-xl font-black tracking-tighter logo-text">Створення</h1>
-            </div>
-            <button id="menu-btn-create" class="w-10 h-10 flex items-center justify-center text-white text-xl z-10 active:scale-90">☰</button>
-        </header>
-
-        <div class="p-4 space-y-2 flex-shrink-0">
-            <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
-                <textarea id="r-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..."></textarea>
-            </div>
-            <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-full"></div>
-                <textarea id="g-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..."></textarea>
-            </div>
-            <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-full"></div>
-                <textarea id="b-text" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..."></textarea>
-            </div>
-        </div>
-
-        <div class="flex-1 flex flex-col items-center justify-center p-4 relative">
-            <div id="container-create" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl p-4 border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center"></div>
-        </div>
-
-        <div class="p-4 flex-shrink-0">
-            <button id="save-btn" onclick="saveQR()" data-i18n="btn_save" class="w-full py-4 bg-white text-black font-bold rounded-2xl hidden active:scale-95 text-sm tracking-widest uppercase shadow-lg">Зберегти PNG</button>
-        </div>
+    <div class="border-t border-white/10 pt-3 space-y-2.5 text-zinc-300">
+      <div class="flex items-start gap-2.5">
+        <span class="font-bold text-orange-500">1</span>
+        <p id="step-1">📝 <b>Створення:</b> введіть текст у червоне, зелене та синє поле (можна заповнити лише одне або два).</p>
+      </div>
+      <div class="flex items-start gap-2.5">
+        <span class="font-bold text-orange-500">2</span>
+        <p id="step-2">🎨 <b>Генерація:</b> кольоровий QR-код створюється автоматично на льоту під час введення.</p>
+      </div>
+      <div class="flex items-start gap-2.5">
+        <span class="font-bold text-orange-500">3</span>
+        <p id="step-3">💾 <b>Збереження:</b> натисніть «Зберегти PNG», щоб завантажити зображення.</p>
+      </div>
+      <div class="flex items-start gap-2.5">
+        <span class="font-bold text-teal-500">4</span>
+        <p id="step-4">📷 <b>Сканування:</b> натисніть «Сканувати» → наведіть камеру на код або оберіть фото з галереї.</p>
+      </div>
     </div>
 
-    <div id="screen-scan" class="screen">
-        <header class="flex items-center p-4 border-b border-white/10 relative z-20 h-16">
-            <button onclick="hardReset()" class="text-2xl z-10 px-2 mr-2 text-zinc-400 hover:text-white">←</button>
-            <div class="flex-1 text-center">
-                <h1 id="scan-title-text" data-i18n="scan_title" class="text-xl font-black tracking-tighter">Сканування</h1>
-            </div>
-            <button id="menu-btn-scan" onclick="els.dropdown.classList.toggle('show'); event.stopPropagation();" class="w-10 h-10 flex items-center justify-center text-white text-xl z-10 active:scale-90">☰</button>
-        </header>
-
-        <div class="p-4 space-y-2 flex-shrink-0">
-            <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
-                <textarea id="r-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..." readonly></textarea>
-            </div>
-            <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-600 rounded-full"></div>
-                <textarea id="g-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..." readonly></textarea>
-            </div>
-            <div class="relative">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-full"></div>
-                <textarea id="b-text-scan" class="w-full p-3 pl-4 rounded-xl outline-none h-12 text-sm font-medium" placeholder="Введіть текст..." readonly></textarea>
-            </div>
-        </div>
-
-        <div class="flex-1 flex flex-col items-center justify-center p-4 relative">
-             <div id="container-scan" class="relative w-full max-w-xs aspect-square bg-zinc-950 rounded-3xl border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center"></div>
-        </div>
-
-        <div class="p-6 space-y-4 flex-shrink-0">
-            <button onclick="startCamera()" data-i18n="btn_camera" class="w-full py-4 btn-secondary text-white font-bold rounded-2xl active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">📸 Камера</button>
-            <button onclick="document.getElementById('file-input').click()" data-i18n="btn_gallery" class="w-full py-4 btn-secondary text-white font-bold rounded-2xl active:scale-95 text-sm tracking-widest uppercase flex items-center justify-center gap-2">🖼️ Галерея</button>
-        </div>
+    <div class="border-t border-white/10 pt-3 text-zinc-400">
+      <h3 data-i18n="menu_tech_title" class="font-bold text-white mb-1">⚙️ Технологія друку</h3>
+      <p data-i18n="menu_tech_desc" class="leading-relaxed">Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. Для успішного перенесення цифрового коду на фізичний носій необхідно враховувати принципи, описні в:</p>
+      <a href="https://zenodo.org/records/19633526" target="_blank" class="text-blue-400 hover:underline block mt-1 text-[11px]">Zenodo: SCI Model</a>
     </div>
 
-    <div id="dropdown" class="dropdown-menu fixed top-4 right-4 w-72 bg-zinc-900/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-[100] overflow-hidden">
-        <div class="flex border-b border-white/10 p-1 bg-zinc-800/50">
-            <button onclick="setLanguage('uk')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white border-r border-white/5">🇺🇦 UA</button>
-            <button onclick="setLanguage('en')" class="flex-1 py-2 text-[10px] font-bold text-zinc-400 hover:text-white">🇬🇧 EN</button>
-        </div>
-        <div class="p-4 text-xs space-y-3">
-            <div class="text-zinc-400">
-                <h3 data-i18n="menu_tech_title" class="font-bold text-white mb-1">⚙️ Технологія друку</h3>
-                <p data-i18n="menu_tech_desc" class="leading-relaxed">Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. Для успішного перенесення цифрового коду на фізичний носій необхідно враховувати принципи, описні в:</p>
-                <a href="https://zenodo.org/records/19633526" target="_blank" class="text-blue-400 hover:underline block mt-1 text-[11px]">Zenodo: SCI Model</a>
-            </div>
-            <div class="border-t border-white/10 pt-3 space-y-2 text-zinc-400">
-                <div class="font-bold text-white">Mykhailo Kashkarov</div>
-                <div>📧 <a href="mailto:colqrnament@gmail.com" class="hover:text-white">colqrnament@gmail.com</a></div>
-                <div>📞 <a href="tel:+380635058292" class="hover:text-white">063 505 82 92</a></div>
-                <div>💻 <a href="https://github.com/Astra31415926" target="_blank" class="hover:text-white text-[11px] block truncate">github.com/Astra31415926</a></div>
-                <div>🌐 <a href="https://astra31415926.github.io/" target="_blank" class="hover:text-white text-[11px] block truncate">astra31415926.github.io</a></div>
-            </div>
-        </div>
+    <div class="border-t border-white/10 pt-3 space-y-2 text-zinc-400">
+      <div class="font-bold text-white">Mykhailo Kashkarov</div>
+      <div>📧 <a href="mailto:colqrnament@gmail.com" class="hover:text-white">colqrnament@gmail.com</a></div>
+      <div>📞 <a href="tel:+380635058292" class="hover:text-white">063 505 82 92</a></div>
+      <div>💻 <a href="https://github.com/Astra31415926" target="_blank" class="hover:text-white text-[11px] block truncate">github.com/Astra31415926</a></div>
+      <div>🌐 <a href="https://astra31415926.github.io/" target="_blank" class="hover:text-white text-[11px] block truncate">astra31415926.github.io</a></div>
     </div>
 
-    <div id="flash-layer" class="fixed inset-0 bg-white opacity-0 pointer-events-none z-[200]"></div>
+  </div>
+</div>
+
+<div id="flash-layer" class="fixed inset-0 bg-white opacity-0 pointer-events-none z-[200]"></div>
 
 <script>
-    // === 1. STATE & DOM ===
-    const state = {
-        scanning: false,
-        stream: null,
-        locked: { r: false, g: false, b: false },
-        results: { r: null, g: null, b: null },
-        activeSearch: false,
-        standardFailCount: 0,
-        AUTO_TRIGGER_THRESHOLD: 45,
-        time: 0,
-        channelIndex: 0,
-        config: {
-            R: { k1: 0.10, k2: 0.20 },
-            G: { k1: 0.18, k2: 0.33 },
-            B: { k1: 0.05, k2: 0.13 }
-        }
+// === 1. STATE & DOM ===
+const state = {
+  scanning: false,
+  stream: null,
+  locked: { r: false, g: false, b: false },
+  results: { r: null, g: null, b: null },
+  activeSearch: false,
+  standardFailCount: 0,
+  AUTO_TRIGGER_THRESHOLD: 45,
+  time: 0,
+  channelIndex: 0,
+  config: {
+    R: { k1: 0.10, k2: 0.20 },
+    G: { k1: 0.18, k2: 0.33 },
+    B: { k1: 0.05, k2: 0.13 }
+  }
+};
+
+const els = {
+  r: document.getElementById('r-text'),
+  g: document.getElementById('g-text'),
+  b: document.getElementById('b-text'),
+  rScan: document.getElementById('r-text-scan'),
+  gScan: document.getElementById('g-text-scan'),
+  bScan: document.getElementById('b-text-scan'),
+  main: document.createElement('canvas'),
+  video: document.createElement('video'),
+  freeze: document.createElement('canvas'),
+  ctx: null, fCtx: null,
+  flash: document.getElementById('flash-layer'),
+  viewfinder: document.createElement('div'),
+  dropdown: document.getElementById('dropdown'),
+  saveBtn: document.getElementById('save-btn'),
+  scanTitle: document.getElementById('scan-title-text'),
+  containers: {
+    create: document.getElementById('container-create'),
+    scan: document.getElementById('container-scan')
+  }
+};
+
+els.main.width = 512; els.main.height = 512;
+els.freeze.width = 512; els.freeze.height = 512;
+els.main.className = "w-full h-full object-contain relative z-10 rounded-2xl";
+els.video.className = "absolute inset-0 w-full h-full object-cover hidden z-10";
+els.video.setAttribute('playsinline', '');
+els.freeze.className = "absolute inset-0 w-full h-full object-cover hidden z-12";
+els.ctx = els.main.getContext('2d', { willReadFrequently: true });
+els.fCtx = els.freeze.getContext('2d', { willReadFrequently: true });
+els.viewfinder.className = "viewfinder-corners hidden";
+els.viewfinder.innerHTML = `<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>`;
+
+// === 2. TRANSLATIONS ===
+const translations = {
+  uk: {
+    home_title: "Генератор і сканер кольорових QR-кодів",
+    home_desc1: "Інформація кодується в каналах RGB, що дозволяє збільшити обсяг даних до 3 разів порівняно зі звичайними QR-кодами.",
+    home_desc2: "⚡ Ця програма читає коди тільки з екрану або фото з галереї. 📱 Звичайні QR-сканери не бачать кольорові канали.",
+    learn_more: "Як це працює",
+    step1: "📝 <b>Створення:</b> введіть текст у червоне, зелене та синє поле (можна заповнити лише одне або два).",
+    step2: "🎨 <b>Генерація:</b> кольоровий QR-код створюється автоматично на льоту під час введення.",
+    step3: "💾 <b>Збереження:</b> натисніть «Зберегти PNG», щоб завантажити зображення.",
+    step4: "📷 <b>Сканування:</b> натисніть «Сканувати» → наведіть камеру на код або оберіть фото з галереї.",
+    btn_create_nav: "[+] Створити",
+    btn_scan_nav: "[🔍] Сканувати",
+    create_title: "Створення",
+    scan_title: "Сканування",
+    scanning_status: "Сканування...",
+    scan_done: "Готово",
+    btn_camera: "📸 Камера",
+    btn_gallery: "🖼️ Галерея",
+    btn_save: "Зберегти PNG",
+    placeholder: "Введіть текст...",
+    menu_tech_title: "⚙️ Технологія друку",
+    menu_tech_desc: "Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. Для успішного перенесення цифрового коду на фізичний носій необхідно враховувати принципи, описані в:"
+  },
+  en: {
+    home_title: "Color QR Code Generator & Scanner",
+    home_desc1: "Information is encoded in RGB channels, expanding data capacity up to 3 times compared to regular QR codes.",
+    home_desc2: "⚡ This app only reads codes from screens or gallery photos. 📱 Standard QR scanners cannot detect color channels.",
+    learn_more: "How it works",
+    step1: "📝 <b>Creation:</b> enter text into the red, green, and blue fields (you can fill only one or two).",
+    step2: "🎨 <b>Generation:</b> the color QR code is generated automatically on the fly as you type.",
+    step3: "💾 <b>Saving:</b> click 'Save PNG' to download the generated image.",
+    step4: "📷 <b>Scanning:</b> click 'Scan' → point the camera at the code or pick a photo from your gallery.",
+    btn_create_nav: "[+] Create",
+    btn_scan_nav: "[🔍] Scan",
+    create_title: "Creation",
+    scan_title: "Scanning",
+    scanning_status: "Scanning...",
+    scan_done: "Done",
+    btn_camera: "📸 Camera",
+    btn_gallery: "🖼️ Gallery",
+    btn_save: "Save PNG",
+    placeholder: "Enter text...",
+    menu_tech_title: "⚙️ Printing Tech",
+    menu_tech_desc: "Standard CMYK printing is not applicable as it disrupts the color channel profiles. For successful transfer of digital codes to physical assets, refer to:"
+  }
+};
+
+let currentLang = 'uk';
+function setLanguage(lang) {
+  currentLang = lang;
+  const dict = translations[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) el.textContent = dict[key];
+  });
+  document.getElementById('step-1').innerHTML = dict.step1;
+  document.getElementById('step-2').innerHTML = dict.step2;
+  document.getElementById('step-3').innerHTML = dict.step3;
+  document.getElementById('step-4').innerHTML = dict.step4;
+
+  const placeholders = ['r', 'g', 'b', 'rScan', 'gScan', 'bScan'];
+  placeholders.forEach(id => { if (els[id]) els[id].placeholder = dict.placeholder; });
+
+  if (state.scanning) {
+    els.scanTitle.textContent = (state.locked.r && state.locked.g && state.locked.b) ? dict.scan_done : dict.scanning_status;
+  }
+  els.dropdown.classList.remove('show');
+}
+
+// === 3. ALGORITHMS (QRGB-13 Logic) ===
+function applyBradleyStandard(imgData, chIdx) {
+  const w = imgData.width, h = imgData.height;
+  const input = imgData.data;
+  const output = new Uint8ClampedArray(w * h * 4);
+  const intImg = new Int32Array(w * h);
+  const s = Math.floor(w / 8), t = 15;
+  for (let y = 0; y < h; y++) {
+    let sum = 0;
+    for (let x = 0; x < w; x++) {
+      sum += input[(y * w + x) * 4 + chIdx];
+      intImg[y * w + x] = (y > 0 ? intImg[(y - 1) * w + x] : 0) + sum;
+    }
+  }
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const x1 = Math.max(x - s, 0), x2 = Math.min(x + s, w - 1);
+      const y1 = Math.max(y - s, 0), y2 = Math.min(y + s, h - 1);
+      const count = (x2 - x1) * (y2 - y1);
+      const sum = intImg[y2 * w + x2] - intImg[y1 * w + x2] - intImg[y2 * w + x1] + intImg[y1 * w + x1];
+      const val = input[(y * w + x) * 4 + chIdx];
+      const res = (val * count < sum * (100 - t) / 100) ? 0 : 255;
+      const idx = (y * w + x) * 4;
+      output[idx] = output[idx+1] = output[idx+2] = res; output[idx+3] = 255;
+    }
+  }
+  return new ImageData(output, w, h);
+}
+
+function applySCIMath(imgData, ch, cfg) {
+  const d = imgData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    let r = d[i], g = d[i+1], b = d[i+2];
+    let target, n1, n2;
+    if (ch === 'R') { target = r; n1 = g; n2 = b; }
+    else if (ch === 'G') { target = g; n1 = r; n2 = b; }
+    else { target = b; n1 = r; n2 = g; }
+    let res = (target - (n1 * cfg.k1 + n2 * cfg.k2)) * cfg.gain + cfg.offset;
+    res = Math.max(0, Math.min(255, res));
+    d[i] = res; d[i+1] = res; d[i+2] = res; d[i+3] = 255;
+  }
+}
+
+function getOscParam(t, period, min, max) {
+  const cycle = t % period;
+  const half = period / 2;
+  const pos = (cycle < half) ? cycle / half : (period - cycle) / half;
+  return min + pos * (max - min);
+}
+
+// === 4. MAIN HYBRID LOOP ===
+function processLoop() {
+  if (!state.scanning) return;
+  let sourceCopy = null;
+  if (els.video.classList.contains('hidden') === false && els.video.readyState === els.video.HAVE_ENOUGH_DATA) {
+    els.ctx.drawImage(els.video, 0, 0, 512, 512);
+    sourceCopy = els.ctx.getImageData(0, 0, 512, 512);
+  } else if (els.freeze.classList.contains('hidden') === false) {
+    sourceCopy = els.fCtx.getImageData(0, 0, 512, 512);
+  }
+
+  if (sourceCopy) {
+    if (state.standardFailCount > state.AUTO_TRIGGER_THRESHOLD && !state.activeSearch) {
+      state.activeSearch = true;
+    }
+    const channels = ['R', 'G', 'B'];
+    const activeChannels = channels.filter(ch => !state.locked[ch.toLowerCase()]);
+
+    if (activeChannels.length > 0) {
+      const ch = activeChannels[state.channelIndex % activeChannels.length];
+      state.channelIndex++;
+      const baseCfg = state.config[ch];
+      let foundInFrame = false;
+
+      if (state.activeSearch) {
+        state.time++;
+        const gain = getOscParam(state.time, 100, 0.5, 3.5);
+        const offset = getOscParam(state.time, 250, -80, 0);
+        const cfg = { ...baseCfg, gain, offset };
+        let workData = new ImageData(new Uint8ClampedArray(sourceCopy.data), 512, 512);
+        applySCIMath(workData, ch, cfg);
+        let mono = applyBradleyStandard(workData, 0);
+        const code = jsQR(mono.data, 512, 512, { inversionAttempts: "attemptBoth" });
+        if (code) { lockChannel(ch, code.data); foundInFrame = true; }
+        if (!foundInFrame) els.ctx.putImageData(workData, 0, 0);
+      } else {
+        state.standardFailCount++;
+        const idx = channels.indexOf(ch);
+        let mono = applyBradleyStandard(sourceCopy, idx);
+        const code = jsQR(mono.data, 512, 512, { inversionAttempts: "attemptBoth" });
+        if (code) { lockChannel(ch, code.data); foundInFrame = true; state.standardFailCount = 0; }
+        if (!foundInFrame) els.ctx.putImageData(sourceCopy, 0, 0);
+      }
+    }
+  }
+  requestAnimationFrame(processLoop);
+}
+
+// === 5. UI & ACTIONS ===
+function lockChannel(ch, data) {
+  const key = ch.toLowerCase();
+  if (state.locked[key]) return;
+  state.locked[key] = true;
+  state.results[key] = data;
+  playBeep();
+  flashScreen();
+  els.viewfinder.classList.add('viewfinder-hunting');
+  setTimeout(() => els.viewfinder.classList.remove('viewfinder-hunting'), 300);
+
+  const inputScan = els[key + 'Scan'];
+  if (inputScan) { inputScan.value = data; inputScan.classList.add('locked', 'locked-'+key); }
+  const inputCreate = els[key];
+  if (inputCreate) { inputCreate.value = data; inputCreate.classList.add('locked', 'locked-'+key); }
+
+  if (state.locked.r && state.locked.g && state.locked.b) {
+    els.scanTitle.textContent = translations[currentLang].scan_done;
+    setTimeout(() => {
+      stopScanning();
+      switchScreen('create');
+      generateQR();
+    }, 500);
+  }
+}
+
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 880; o.type = "sine";
+    g.gain.setValueAtTime(0.1, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.15);
+    o.start(); o.stop(ctx.currentTime + 0.15);
+  } catch(e){}
+}
+
+function flashScreen() {
+  els.flash.classList.add('flash-anim');
+  setTimeout(() => els.flash.classList.remove('flash-anim'), 400);
+}
+
+function switchScreen(screenName) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screenName).classList.add('active');
+  const container = els.containers[screenName];
+  if (container) {
+    if (screenName === 'create') {
+      container.appendChild(els.main);
+      els.main.classList.remove('hidden');
+      els.main.style.opacity = '1';
+    } else if (screenName === 'scan') {
+      container.appendChild(els.video);
+      container.appendChild(els.freeze);
+      container.appendChild(els.main);
+      container.appendChild(els.viewfinder);
+    }
+  }
+}
+
+async function startCamera() {
+  stopScanning();
+  state.locked = {r:false, g:false, b:false};
+  state.results = {r:null, g:null, b:null};
+  state.activeSearch = false;
+  state.standardFailCount = 0;
+  const syncFields = ['rScan', 'gScan', 'bScan', 'r', 'g', 'b'];
+  syncFields.forEach(f => {
+    if(els[f]) { els[f].value = ""; els[f].classList.remove('locked', 'locked-r', 'locked-g', 'locked-b'); }
+  });
+  els.viewfinder.classList.remove('hidden');
+  els.video.classList.remove('hidden');
+  els.freeze.classList.add('hidden');
+  els.main.classList.add('hidden');
+  els.scanTitle.textContent = translations[currentLang].scanning_status;
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: {ideal: 1280} } });
+    state.stream = stream;
+    els.video.srcObject = stream;
+    els.video.play();
+    state.scanning = true;
+    requestAnimationFrame(processLoop);
+  } catch(e) { alert("Camera Error: " + e); }
+}
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  stopScanning();
+  state.locked = {r:false, g:false, b:false};
+  state.results = {r:null, g:null, b:null};
+  state.activeSearch = false;
+  state.standardFailCount = 0;
+  const syncFields = ['rScan', 'gScan', 'bScan', 'r', 'g', 'b'];
+  syncFields.forEach(f => {
+    if(els[f]) { els[f].value = ""; els[f].classList.remove('locked', 'locked-r', 'locked-g', 'locked-b'); }
+  });
+  els.viewfinder.classList.remove('hidden');
+  els.scanTitle.textContent = translations[currentLang].scanning_status;
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const s = 512;
+      els.freeze.width = s; els.freeze.height = s;
+      const ctx = els.fCtx;
+      const min = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width-min)/2, (img.height-min)/2, min, min, 0, 0, s, s);
+      els.freeze.classList.remove('hidden');
+      els.video.classList.add('hidden');
+      els.main.classList.add('hidden');
+      state.scanning = true;
+      state.activeSearch = true;
+      state.standardFailCount = 100;
+      requestAnimationFrame(processLoop);
     };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
-    const els = {
-        r: document.getElementById('r-text'), 
-        g: document.getElementById('g-text'), 
-        b: document.getElementById('b-text'),
-        rScan: document.getElementById('r-text-scan'), 
-        gScan: document.getElementById('g-text-scan'), 
-        bScan: document.getElementById('b-text-scan'),
-        main: document.createElement('canvas'),
-        video: document.createElement('video'),
-        freeze: document.createElement('canvas'),
-        ctx: null, fCtx: null,
-        flash: document.getElementById('flash-layer'),
-        viewfinder: document.createElement('div'),
-        dropdown: document.getElementById('dropdown'),
-        saveBtn: document.getElementById('save-btn'),
-        scanTitle: document.getElementById('scan-title-text'),
-        containers: {
-            create: document.getElementById('container-create'),
-            scan: document.getElementById('container-scan')
+function stopScanning() {
+  state.scanning = false;
+  if (state.stream) { state.stream.getTracks().forEach(track => track.stop()); state.stream = null; }
+  if (els.video.srcObject) { els.video.srcObject = null; }
+  els.viewfinder.classList.add('hidden');
+  els.video.classList.add('hidden');
+}
+
+function hardReset() {
+  stopScanning();
+  state.locked = {r:false, g:false, b:false};
+  state.results = {r:null, g:null, b:null};
+  state.activeSearch = false;
+  state.standardFailCount = 0;
+  state.channelIndex = 0;
+  state.time = 0;
+  const syncFields = ['r', 'g', 'b', 'rScan', 'gScan', 'bScan'];
+  syncFields.forEach(f => {
+    if(els[f]) { els[f].value = ""; els[f].classList.remove('locked', 'locked-r', 'locked-g', 'locked-b'); }
+  });
+  els.freeze.classList.add('hidden');
+  els.video.classList.add('hidden');
+  els.ctx.fillStyle = "#000";
+  els.ctx.fillRect(0,0,512,512);
+  els.saveBtn.classList.add('hidden');
+  els.scanTitle.textContent = translations[currentLang].scan_title;
+  switchScreen('home');
+}
+
+function generateQR() {
+  const texts = [els.r.value, els.g.value, els.b.value];
+  els.ctx.fillStyle = "#000";
+  els.ctx.fillRect(0,0,512,512);
+  if (!texts.some(t => t.trim())) { els.saveBtn.classList.add('hidden'); return; }
+  els.saveBtn.classList.remove('hidden');
+
+  let maxVer = 1;
+  texts.forEach(t => {
+    if(!t.trim()) return;
+    try {
+      const tmp = qrcode(0, 'M');
+      tmp.addData(unescape(encodeURIComponent(t))); tmp.make();
+      const v = Math.floor((tmp.getModuleCount() - 17) / 4);
+      if (v > maxVer) maxVer = v;
+    } catch(e){}
+  });
+
+  const matrices = texts.map(t => {
+    if (!t.trim()) return null;
+    try {
+      const qr = qrcode(maxVer, 'M');
+      qr.addData(unescape(encodeURIComponent(t)));
+      qr.make();
+      return qr;
+    } catch(e) { return null; }
+  });
+
+  const qrObj = matrices.find(m => m !== null);
+  if (!qrObj) return;
+  const count = qrObj.getModuleCount();
+  const cellSize = Math.floor(512 / count);
+  const margin = Math.floor((512 - (cellSize * count)) / 2);
+
+  els.ctx.globalCompositeOperation = "source-over";
+  els.ctx.fillStyle = "#000";
+  els.ctx.fillRect(0,0,512,512);
+  els.ctx.globalCompositeOperation = "lighten";
+
+  matrices.forEach((qr, i) => {
+    if(!qr) return;
+    els.ctx.fillStyle = i === 0 ? "rgb(255,0,0)" : (i === 1 ? "rgb(0,255,0)" : "rgb(0,0,255)");
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) {
+          els.ctx.fillRect(margin + c * cellSize, margin + r * cellSize, cellSize, cellSize);
         }
-    };
-
-    els.main.width = 512; els.main.height = 512;
-    els.freeze.width = 512; els.freeze.height = 512;
-    els.main.className = "w-full h-full object-contain relative z-10 rounded-2xl";
-    els.video.className = "absolute inset-0 w-full h-full object-cover hidden z-10";
-    els.video.setAttribute('playsinline', '');
-    els.freeze.className = "absolute inset-0 w-full h-full object-cover hidden z-12";
-    
-    els.ctx = els.main.getContext('2d', { willReadFrequently: true });
-    els.fCtx = els.freeze.getContext('2d', { willReadFrequently: true });
-
-    els.viewfinder.className = "viewfinder-corners hidden";
-    els.viewfinder.innerHTML = `<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>`;
-
-    // === 2. TRANSLATIONS ===
-    const translations = {
-        uk: {
-            home_title: "Генератор і сканер кольорових QR-кодів",
-            home_desc1: "Інформація кодується в каналах RGB, що дозволяє збільшити обсяг даних до 3 разів порівняно зі звичайними QR-кодами.",
-            home_desc2: "⚡ Ця програма читає коди тільки з екрану або фото з галереї. 📱 Звичайні QR-сканери не бачать кольорові канали.",
-            step1: "📝 <b>Створення:</b> введіть текст у червоне, зелене та синє поле (можна заповнити лише одне або два).",
-            step2: "🎨 <b>Генерація:</b> кольоровий QR-код створюється автоматично на льоту під час введення.",
-            step3: "💾 <b>Збереження:</b> натисніть «Зберегти PNG», щоб завантажити зображення.",
-            step4: "📷 <b>Сканування:</b> натисніть «Сканувати» → наведіть камеру на код або оберіть фото з галереї.",
-            btn_create_nav: "[+] Створити",
-            btn_scan_nav: "[🔍] Сканувати",
-            create_title: "Створення",
-            scan_title: "Сканування",
-            scanning_status: "Сканування...",
-            scan_done: "Готово",
-            btn_camera: "📸 Камера",
-            btn_gallery: "🖼️ Галерея",
-            btn_save: "Зберегти PNG",
-            placeholder: "Введіть текст...",
-            menu_tech_title: "⚙️ Технологія друку",
-            menu_tech_desc: "Звичайний CMYK-друк не підходить, оскільки порушує структуру кольорових каналів. Для успішного перенесення цифрового коду на фізичний носій необхідно враховувати принципи, описані в:"
-        },
-        en: {
-            home_title: "Color QR Code Generator & Scanner",
-            home_desc1: "Information is encoded in RGB channels, expanding data capacity up to 3 times compared to regular QR codes.",
-            home_desc2: "⚡ This app only reads codes from screens or gallery photos. 📱 Standard QR scanners cannot detect color channels.",
-            step1: "📝 <b>Creation:</b> enter text into the red, green, and blue fields (you can fill only one or two).",
-            step2: "🎨 <b>Generation:</b> the color QR code is generated automatically on the fly as you type.",
-            step3: "💾 <b>Saving:</b> click 'Save PNG' to download the generated image.",
-            step4: "📷 <b>Scanning:</b> click 'Scan' → point the camera at the code or pick a photo from your gallery.",
-            btn_create_nav: "[+] Create",
-            btn_scan_nav: "[🔍] Scan",
-            create_title: "Creation",
-            scan_title: "Scanning",
-            scanning_status: "Scanning...",
-            scan_done: "Done",
-            btn_camera: "📸 Camera",
-            btn_gallery: "🖼️ Gallery",
-            btn_save: "Save PNG",
-            placeholder: "Enter text...",
-            menu_tech_title: "⚙️ Printing Tech",
-            menu_tech_desc: "Standard CMYK printing is not applicable as it disrupts the color channel profiles. For successful transfer of digital codes to physical assets, refer to:"
-        }
-    };
-    let currentLang = 'uk';
-
-    function setLanguage(lang) {
-        currentLang = lang;
-        const dict = translations[lang];
-        
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (dict[key]) el.textContent = dict[key];
-        });
-
-        document.getElementById('step-1').innerHTML = dict.step1;
-        document.getElementById('step-2').innerHTML = dict.step2;
-        document.getElementById('step-3').innerHTML = dict.step3;
-        document.getElementById('step-4').innerHTML = dict.step4;
-
-        const placeholders = ['r', 'g', 'b', 'rScan', 'gScan', 'bScan'];
-        placeholders.forEach(id => { if (els[id]) els[id].placeholder = dict.placeholder; });
-        
-        if (state.scanning) {
-            els.scanTitle.textContent = (state.locked.r && state.locked.g && state.locked.b) ? dict.scan_done : dict.scanning_status;
-        }
-        els.dropdown.classList.remove('show');
+      }
     }
+  });
+  els.ctx.globalCompositeOperation = "source-over";
+}
 
-    // === 3. ALGORITHMS (QRGB-13 Logic) ===
-    function applyBradleyStandard(imgData, chIdx) {
-        const w = imgData.width, h = imgData.height;
-        const input = imgData.data;
-        const output = new Uint8ClampedArray(w * h * 4);
-        const intImg = new Int32Array(w * h);
-        const s = Math.floor(w / 8), t = 15;
+function saveQR() {
+  const a = document.createElement('a');
+  a.download = `SpectrumQR_${Date.now()}.png`;
+  a.href = els.main.toDataURL('image/png');
+  a.click();
+}
 
-        for (let y = 0; y < h; y++) {
-            let sum = 0;
-            for (let x = 0; x < w; x++) {
-                sum += input[(y * w + x) * 4 + chIdx];
-                intImg[y * w + x] = (y > 0 ? intImg[(y - 1) * w + x] : 0) + sum;
-            }
-        }
+// === 6. EVENT LISTENERS ===
+document.getElementById('file-input').addEventListener('change', handleFile);
+const menuBtns = [document.getElementById('menu-btn-home'), document.getElementById('menu-btn-create')];
+menuBtns.forEach(btn => {
+  if(btn) btn.onclick = (e) => { e.stopPropagation(); els.dropdown.classList.toggle('show'); };
+});
+document.onclick = (e) => {
+  if(!e.target.closest('#dropdown')) els.dropdown.classList.remove('show');
+};
 
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                const x1 = Math.max(x - s, 0), x2 = Math.min(x + s, w - 1);
-                const y1 = Math.max(y - s, 0), y2 = Math.min(y + s, h - 1);
-                const count = (x2 - x1) * (y2 - y1);
-                const sum = intImg[y2 * w + x2] - intImg[y1 * w + x2] - intImg[y2 * w + x1] + intImg[y1 * w + x1];
-                const val = input[(y * w + x) * 4 + chIdx];
-                const res = (val * count < sum * (100 - t) / 100) ? 0 : 255;
-                const idx = (y * w + x) * 4;
-                output[idx] = output[idx+1] = output[idx+2] = res; output[idx+3] = 255;
-            }
-        }
-        return new ImageData(output, w, h);
-    }
+[els.r, els.g, els.b].forEach(el => el.addEventListener('input', generateQR));
 
-    function applySCIMath(imgData, ch, cfg) {
-        const d = imgData.data;
-        for (let i = 0; i < d.length; i += 4) {
-            let r = d[i], g = d[i+1], b = d[i+2];
-            let target, n1, n2;
-            
-            if (ch === 'R') { target = r; n1 = g; n2 = b; }
-            else if (ch === 'G') { target = g; n1 = r; n2 = b; }
-            else { target = b; n1 = r; n2 = g; }
-
-            let res = (target - (n1 * cfg.k1 + n2 * cfg.k2)) * cfg.gain + cfg.offset;
-            res = Math.max(0, Math.min(255, res));
-            d[i] = res; d[i+1] = res; d[i+2] = res; d[i+3] = 255;
-        }
-    }
-
-    function getOscParam(t, period, min, max) {
-        const cycle = t % period;
-        const half = period / 2;
-        const pos = (cycle < half) ? cycle / half : (period - cycle) / half;
-        return min + pos * (max - min);
-    }
-
-    // === 4. MAIN HYBRID LOOP ===
-    function processLoop() {
-        if (!state.scanning) return;
-        let sourceCopy = null;
-        
-        if (els.video.classList.contains('hidden') === false && els.video.readyState === els.video.HAVE_ENOUGH_DATA) {
-            els.ctx.drawImage(els.video, 0, 0, 512, 512);
-            sourceCopy = els.ctx.getImageData(0, 0, 512, 512);
-        } else if (els.freeze.classList.contains('hidden') === false) {
-            sourceCopy = els.fCtx.getImageData(0, 0, 512, 512);
-        }
-
-        if (sourceCopy) {
-            if (state.standardFailCount > state.AUTO_TRIGGER_THRESHOLD && !state.activeSearch) {
-                state.activeSearch = true;
-            }
-
-            const channels = ['R', 'G', 'B'];
-            const activeChannels = channels.filter(ch => !state.locked[ch.toLowerCase()]);
-            
-            if (activeChannels.length > 0) {
-                const ch = activeChannels[state.channelIndex % activeChannels.length];
-                state.channelIndex++;
-                
-                const baseCfg = state.config[ch];
-                let foundInFrame = false;
-
-                if (state.activeSearch) {
-                    state.time++; 
-                    const gain = getOscParam(state.time, 100, 0.5, 3.5);
-                    const offset = getOscParam(state.time, 250, -80, 0);
-                    const cfg = { ...baseCfg, gain, offset };
-
-                    let workData = new ImageData(new Uint8ClampedArray(sourceCopy.data), 512, 512);
-                    applySCIMath(workData, ch, cfg);
-                    let mono = applyBradleyStandard(workData, 0);
-                    
-                    const code = jsQR(mono.data, 512, 512, { inversionAttempts: "attemptBoth" });
-                    if (code) {
-                        lockChannel(ch, code.data);
-                        foundInFrame = true;
-                    }
-                    if (!foundInFrame) els.ctx.putImageData(workData, 0, 0);
-
-                } else {
-                    state.standardFailCount++;
-                    const idx = channels.indexOf(ch);
-                    let mono = applyBradleyStandard(sourceCopy, idx);
-                    const code = jsQR(mono.data, 512, 512, { inversionAttempts: "attemptBoth" });
-                    
-                    if (code) {
-                        lockChannel(ch, code.data);
-                        foundInFrame = true;
-                        state.standardFailCount = 0; 
-                    }
-                    if (!foundInFrame) els.ctx.putImageData(sourceCopy, 0, 0);
-                }
-            }
-        }
-        requestAnimationFrame(processLoop);
-    }
-
-    // === 5. UI & ACTIONS ===
-    function lockChannel(ch, data) {
-        const key = ch.toLowerCase();
-        if (state.locked[key]) return;
-        
-        state.locked[key] = true;
-        state.results[key] = data;
-        
-        playBeep();
-        flashScreen();
-        
-        els.viewfinder.classList.add('viewfinder-hunting');
-        setTimeout(() => els.viewfinder.classList.remove('viewfinder-hunting'), 300);
-
-        const inputScan = els[key + 'Scan'];
-        if (inputScan) {
-            inputScan.value = data;
-            inputScan.classList.add('locked', 'locked-'+key);
-        }
-        
-        const inputCreate = els[key];
-        if (inputCreate) {
-            inputCreate.value = data;
-            inputCreate.classList.add('locked', 'locked-'+key);
-        }
-
-        if (state.locked.r && state.locked.g && state.locked.b) {
-            els.scanTitle.textContent = translations[currentLang].scan_done;
-            setTimeout(() => {
-                stopScanning();
-                switchScreen('create');
-                generateQR();
-            }, 500);
-        }
-    }
-
-    function playBeep() {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const o = ctx.createOscillator(); const g = ctx.createGain();
-            o.connect(g); g.connect(ctx.destination);
-            o.frequency.value = 880; o.type = "sine";
-            g.gain.setValueAtTime(0.1, ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.15);
-            o.start(); o.stop(ctx.currentTime + 0.15);
-        } catch(e){}
-    }
-
-    function flashScreen() {
-        els.flash.classList.add('flash-anim');
-        setTimeout(() => els.flash.classList.remove('flash-anim'), 400);
-    }
-
-    function switchScreen(screenName) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('screen-' + screenName).classList.add('active');
-        
-        const container = els.containers[screenName];
-        if (container) {
-            if (screenName === 'create') {
-                container.appendChild(els.main);
-                els.main.classList.remove('hidden');
-                els.main.style.opacity = '1';
-            } else if (screenName === 'scan') {
-                container.appendChild(els.video);
-                container.appendChild(els.freeze);
-                container.appendChild(els.main);
-                container.appendChild(els.viewfinder);
-            }
-        }
-    }
-
-    async function startCamera() {
-        stopScanning();
-        state.locked = {r:false, g:false, b:false};
-        state.results = {r:null, g:null, b:null};
-        state.activeSearch = false;
-        state.standardFailCount = 0;
-        
-        const syncFields = ['rScan', 'gScan', 'bScan', 'r', 'g', 'b'];
-        syncFields.forEach(f => {
-            if(els[f]) {
-                els[f].value = "";
-                els[f].classList.remove('locked', 'locked-r', 'locked-g', 'locked-b');
-            }
-        });
-
-        els.viewfinder.classList.remove('hidden');
-        els.video.classList.remove('hidden');
-        els.freeze.classList.add('hidden');
-        els.main.classList.add('hidden');
-        els.scanTitle.textContent = translations[currentLang].scanning_status;
-
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: {ideal: 1280} } });
-            state.stream = stream;
-            els.video.srcObject = stream; 
-            els.video.play();
-            state.scanning = true;
-            requestAnimationFrame(processLoop);
-        } catch(e) { alert("Camera Error: " + e); }
-    }
-
-    function handleFile(e) {
-        const file = e.target.files[0]; 
-        if (!file) return;
-        
-        stopScanning();
-        state.locked = {r:false, g:false, b:false};
-        state.results = {r:null, g:null, b:null};
-        state.activeSearch = false;
-        state.standardFailCount = 0;
-
-        const syncFields = ['rScan', 'gScan', 'bScan', 'r', 'g', 'b'];
-        syncFields.forEach(f => {
-            if(els[f]) {
-                els[f].value = "";
-                els[f].classList.remove('locked', 'locked-r', 'locked-g', 'locked-b');
-            }
-        });
-        
-        els.viewfinder.classList.remove('hidden');
-        els.scanTitle.textContent = translations[currentLang].scanning_status;
-        
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => {
-                const s = 512;
-                els.freeze.width = s; els.freeze.height = s;
-                const ctx = els.fCtx;
-                
-                const min = Math.min(img.width, img.height);
-                ctx.drawImage(img, (img.width-min)/2, (img.height-min)/2, min, min, 0, 0, s, s);
-                
-                els.freeze.classList.remove('hidden');
-                els.video.classList.add('hidden');
-                els.main.classList.add('hidden');
-
-                state.scanning = true;
-                state.activeSearch = true; 
-                state.standardFailCount = 100; 
-                
-                requestAnimationFrame(processLoop);
-            };
-            img.src = ev.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function stopScanning() {
-        state.scanning = false;
-        if (state.stream) {
-            state.stream.getTracks().forEach(track => track.stop());
-            state.stream = null;
-        }
-        if (els.video.srcObject) {
-            els.video.srcObject = null;
-        }
-        els.viewfinder.classList.add('hidden');
-        els.video.classList.add('hidden');
-    }
-
-    function hardReset() {
-        stopScanning();
-        
-        state.locked = {r:false, g:false, b:false};
-        state.results = {r:null, g:null, b:null};
-        state.activeSearch = false;
-        state.standardFailCount = 0;
-        state.channelIndex = 0;
-        state.time = 0;
-
-        const syncFields = ['r', 'g', 'b', 'rScan', 'gScan', 'bScan'];
-        syncFields.forEach(f => {
-            if(els[f]) {
-                els[f].value = "";
-                els[f].classList.remove('locked', 'locked-r', 'locked-g', 'locked-b');
-            }
-        });
-        
-        els.freeze.classList.add('hidden');
-        els.video.classList.add('hidden');
-        
-        els.ctx.fillStyle = "#000";
-        els.ctx.fillRect(0,0,512,512);
-        
-        els.saveBtn.classList.add('hidden');
-        els.scanTitle.textContent = translations[currentLang].scan_title;
-        
-        switchScreen('home');
-    }
-
-    function generateQR() {
-        const texts = [els.r.value, els.g.value, els.b.value];
-        
-        els.ctx.fillStyle = "#000"; 
-        els.ctx.fillRect(0,0,512,512);
-
-        if (!texts.some(t => t.trim())) {
-            els.saveBtn.classList.add('hidden');
-            return;
-        }
-        els.saveBtn.classList.remove('hidden');
-        
-        let maxVer = 1;
-        texts.forEach(t => {
-            if(!t.trim()) return;
-            try {
-                const tmp = qrcode(0, 'M'); 
-                tmp.addData(unescape(encodeURIComponent(t))); tmp.make();
-                const v = Math.floor((tmp.getModuleCount() - 17) / 4);
-                if (v > maxVer) maxVer = v;
-            } catch(e){}
-        });
-        
-        const matrices = texts.map(t => {
-            if (!t.trim()) return null;
-            try {
-                const qr = qrcode(maxVer, 'M');
-                qr.addData(unescape(encodeURIComponent(t)));
-                qr.make();
-                return qr;
-            } catch(e) { return null; }
-        });
-
-        const qrObj = matrices.find(m => m !== null);
-        if (!qrObj) return;
-
-        const count = qrObj.getModuleCount();
-        const cellSize = Math.floor(512 / count);
-        const margin = Math.floor((512 - (cellSize * count)) / 2);
-
-        els.ctx.globalCompositeOperation = "source-over";
-        els.ctx.fillStyle = "#000";
-        els.ctx.fillRect(0,0,512,512);
-
-        els.ctx.globalCompositeOperation = "lighten";
-        
-        matrices.forEach((qr, i) => {
-            if(!qr) return;
-            els.ctx.fillStyle = i === 0 ? "rgb(255,0,0)" : (i === 1 ? "rgb(0,255,0)" : "rgb(0,0,255)");
-            for (let r = 0; r < count; r++) {
-                for (let c = 0; c < count; c++) {
-                    if (qr.isDark(r, c)) {
-                        els.ctx.fillRect(margin + c * cellSize, margin + r * cellSize, cellSize, cellSize);
-                    }
-                }
-            }
-        });
-        els.ctx.globalCompositeOperation = "source-over";
-    }
-
-    function saveQR() { 
-        const a = document.createElement('a'); 
-        a.download = `SpectrumQR_${Date.now()}.png`; 
-        a.href = els.main.toDataURL('image/png'); 
-        a.click(); 
-    }
-
-    // === 6. EVENT LISTENERS ===
-    document.getElementById('file-input').addEventListener('change', handleFile);
-    
-    const menuBtns = [document.getElementById('menu-btn-home'), document.getElementById('menu-btn-create')];
-    menuBtns.forEach(btn => {
-        if(btn) btn.onclick = (e) => { e.stopPropagation(); els.dropdown.classList.toggle('show'); };
-    });
-    
-    document.onclick = (e) => {
-        if(!e.target.closest('#dropdown')) els.dropdown.classList.remove('show');
-    };
-    
-    [els.r, els.g, els.b].forEach(el => el.addEventListener('input', generateQR));
-    
-    window.addEventListener('DOMContentLoaded', () => {
-        setLanguage('uk');
-    });
+window.addEventListener('DOMContentLoaded', () => {
+  setLanguage('uk');
+});
 </script>
 </body>
 </html>
