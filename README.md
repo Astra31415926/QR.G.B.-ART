@@ -1,3 +1,9 @@
+<!-- sci-auto-desc -->
+Spectral Channel Indexing QR Encoder/Decoder
+
+[Live site](https://astra31415926.github.io/QR.G.B.-ART/)
+<!-- sci-auto-desc -->
+
 ![Preview](QRGB_PRO%20540х540.png)
 
 # QR.G.B.-ART
